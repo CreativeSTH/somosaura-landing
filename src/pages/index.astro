@@ -1,10 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.astro';
+import SiteNav from '../components/SiteNav.astro';
 import { sections } from '../lib/sections';
 ---
 
 <Layout>
+  <SiteNav />
   <main>
     {sections.map((section) => (
       <Section section={section} />
