@@ -1,8 +1,8 @@
 ---
 const products = [
-  { name: 'Gaseosa', price: 8500 },
-  { name: 'Pan', price: 4200 },
-  { name: 'Combo', price: 15000 },
+  { name: 'Gaseosa', price: 8500, icon: '🥤' },
+  { name: 'Pan', price: 4200, icon: '🍞' },
+  { name: 'Combo', price: 15000, icon: '🍱' },
 ];
 ---
 
@@ -11,7 +11,9 @@ const products = [
   <div class="mini-products">
     {products.map((p) => (
       <button type="button" class="mini-product" data-price={p.price}>
-        {p.name}<br />${p.price.toLocaleString('es-CO')}
+        <span class="mini-product-icon">{p.icon}</span>
+        <span class="mini-product-name">{p.name}</span>
+        <span class="mini-product-price">${p.price.toLocaleString('es-CO')}</span>
       </button>
     ))}
   </div>
@@ -86,29 +88,57 @@ const products = [
   }
   .mini-products {
     display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 6px 2px;
   }
   .mini-product {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
     border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 10px;
-    padding: 10px 6px;
+    border-radius: 14px;
+    padding: 12px 6px 10px;
     text-align: center;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--fg);
     font-weight: 600;
-    transition: transform 0.15s, border-color 0.15s;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s var(--ease-out), border-color 0.15s;
+  }
+  .mini-product-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .mini-product-name {
+    color: var(--fg-muted);
+  }
+  .mini-product-price {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent-violet);
+    margin-top: 2px;
+  }
+  /* Desordenadas a propósito, como un mazo de tarjetas tirado sobre la mesa. */
+  .mini-products > .mini-product:nth-child(1) {
+    transform: rotate(-5deg) translateY(4px);
+  }
+  .mini-products > .mini-product:nth-child(2) {
+    transform: rotate(4deg) translateY(-6px);
+  }
+  .mini-products > .mini-product:nth-child(3) {
+    transform: rotate(-3deg) translateY(5px);
   }
   .mini-product:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.05) rotate(0deg);
     border-color: var(--accent-violet);
   }
   .mini-product.added {
     border-color: var(--accent-violet);
-    background: rgba(150, 110, 255, 0.15);
+    background: rgba(150, 110, 255, 0.18);
   }
   .mini-cart-row {
     display: flex;
