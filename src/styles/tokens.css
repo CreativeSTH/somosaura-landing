@@ -24,3 +24,10 @@
 
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+@media (min-width: 900px) {
+  :root {
+    /* El topbar mide más en desktop (logo/botón más grandes) — ver TopBar.astro. */
+    --topbar-height: 118px;
+  }
+}
