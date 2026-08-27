@@ -1,0 +1,135 @@
+---
+const products = [
+  { name: 'Gaseosa', price: 8500 },
+  { name: 'Pan', price: 4200 },
+  { name: 'Combo', price: 15000 },
+];
+---
+
+<div class="mini-demo" id="miniDemo">
+  <p class="mini-demo-title">Probalo — creá una venta real</p>
+  <div class="mini-products">
+    {products.map((p) => (
+      <button type="button" class="mini-product" data-price={p.price}>
+        {p.name}<br />${p.price.toLocaleString('es-CO')}
+      </button>
+    ))}
+  </div>
+  <div class="mini-cart-row">
+    <span id="miniCartCount">0 items</span>
+    <span id="miniCartTotal">$0</span>
+  </div>
+  <button type="button" class="mini-cobrar" id="miniCobrarBtn">Cobrar</button>
+  <p class="mini-success" id="miniSuccess">✓ Venta creada — 2 clicks, cero pantallas nuevas.</p>
+</div>
+
+<script>
+  import { formatCOP } from '../lib/formatCurrency';
+  import { createCart } from '../lib/miniDemoCart';
+
+  const root = document.getElementById('miniDemo');
+  if (root) {
+    const cart = createCart();
+    const countEl = document.getElementById('miniCartCount')!;
+    const totalEl = document.getElementById('miniCartTotal')!;
+    const successEl = document.getElementById('miniSuccess')!;
+
+    function render() {
+      countEl.textContent = `${cart.items.length} items`;
+      totalEl.textContent = formatCOP(cart.total());
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('.mini-product').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        btn.classList.add('added');
+        cart.add(Number(btn.dataset.price));
+        successEl.classList.remove('show');
+        render();
+      });
+    });
+
+    document.getElementById('miniCobrarBtn')?.addEventListener('click', () => {
+      if (cart.items.length === 0) return;
+      successEl.classList.add('show');
+      setTimeout(() => {
+        cart.clear();
+        root.querySelectorAll('.mini-product.added').forEach((el) => el.classList.remove('added'));
+        render();
+      }, 2200);
+    });
+  }
+</script>
+
+<style>
+  .mini-demo {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .mini-demo-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-violet);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+  .mini-products {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .mini-product {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--fg);
+    font-weight: 600;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .mini-product:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-violet);
+  }
+  .mini-product.added {
+    border-color: var(--accent-violet);
+    background: rgba(150, 110, 255, 0.15);
+  }
+  .mini-cart-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin-bottom: 12px;
+  }
+  .mini-cobrar {
+    width: 100%;
+    background: var(--fg);
+    border: none;
+    color: #0a0612;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .mini-success {
+    display: none;
+    text-align: center;
+    font-size: 12px;
+    color: #b9f2c6;
+    margin: 10px 0 0;
+    font-weight: 600;
+  }
+  .mini-success.show {
+    display: block;
+  }
+</style>

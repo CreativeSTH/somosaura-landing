@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.astro';
 import SiteNav from '../components/SiteNav.astro';
+import MiniDemo from '../components/MiniDemo.astro';
 import { sections } from '../lib/sections';
 ---
 
@@ -9,7 +10,9 @@ import { sections } from '../lib/sections';
   <SiteNav />
   <main>
     {sections.map((section) => (
-      <Section section={section} />
+      <Section section={section}>
+        {section.id === 'punto-venta' && <MiniDemo slot="demo" />}
+      </Section>
     ))}
   </main>
 </Layout>
