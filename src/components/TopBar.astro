@@ -177,8 +177,11 @@ const menuLinks = [
     max-height: 240px;
     padding: 8px 20px 20px;
   }
-  /* Resplandor radial desde la esquina donde está la hamburguesa — misma técnica
-     que el "menu_scrim" de rainbow.me, con el violeta de marca en vez de negro. */
+  /* Sombra radial oscura desde la esquina de la hamburguesa — misma técnica que
+     el "menu_scrim" de rainbow.me (un negro que se degrada). El de ellos es negro
+     puro porque su fondo es gris oscuro (#111); el nuestro ya es casi negro
+     (#08060c), así que un negro puro ahí encima no se notaría — uso un violeta
+     muy oscuro en vez de neutro, para que el tinte se perciba igual. */
   .topbar-menu::before {
     content: '';
     position: absolute;
@@ -186,7 +189,7 @@ const menuLinks = [
     left: -40px;
     width: 320px;
     height: 320px;
-    background: radial-gradient(circle at top left, rgba(124, 92, 255, 0.35), transparent 70%);
+    background: radial-gradient(circle at top left, rgba(20, 10, 40, 0.9), transparent 70%);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.35s var(--ease-out);
