@@ -1,0 +1,55 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'ghost';
+}
+
+const { href, variant = 'primary' } = Astro.props;
+---
+
+<a class:list={['cta-button', variant]} href={href} target="_blank" rel="noopener noreferrer">
+  <slot />
+</a>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLAnchorElement>('.cta-button');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      btn.style.transform = `translate(${x * 0.15}px, ${y * 0.3}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0, 0)';
+    });
+  });
+</script>
+
+<style>
+  .cta-button {
+    display: inline-block;
+    padding: 13px 26px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: transform 0.15s var(--ease-out);
+  }
+  .cta-button.primary {
+    background: var(--fg);
+    color: #0a0612;
+  }
+  .cta-button.ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--fg);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-button {
+      transition: none;
+    }
+  }
+</style>

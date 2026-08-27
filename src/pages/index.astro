@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.astro';
 import SiteNav from '../components/SiteNav.astro';
 import MiniDemo from '../components/MiniDemo.astro';
+import FinalCTA from '../components/FinalCTA.astro';
 import { sections } from '../lib/sections';
 ---
 
@@ -14,5 +15,6 @@ import { sections } from '../lib/sections';
         {section.id === 'punto-venta' && <MiniDemo slot="demo" />}
       </Section>
     ))}
+    <FinalCTA />
   </main>
 </Layout>
