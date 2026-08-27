@@ -1,0 +1,237 @@
+---
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const appUrl = import.meta.env.PUBLIC_APP_URL;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+const menuLinks = [
+  { label: 'Producto', href: '#punto-venta' },
+  { label: 'Funciones', href: '#domicilios' },
+  { label: 'Tienda online', href: '#tienda' },
+];
+---
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="topbar-logo" href="#inicio" aria-label="AURA — Inicio">
+      <span class="topbar-logo-dot"></span>
+      AURA
+    </a>
+
+    <button
+      type="button"
+      class="topbar-toggle"
+      id="topbarToggle"
+      aria-expanded="false"
+      aria-controls="topbarMenu"
+      aria-label="Abrir menú"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="topbar-menu" id="topbarMenu">
+      {menuLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+      <div class="topbar-actions topbar-actions-mobile">
+        <a class="topbar-enter" href={appUrl}>Entra</a>
+        <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+          Prueba gratis
+        </a>
+      </div>
+    </nav>
+
+    <div class="topbar-actions topbar-actions-desktop">
+      <a class="topbar-enter" href={appUrl}>Entra</a>
+      <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+        Prueba gratis
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('topbarToggle');
+  const menu = document.getElementById('topbarMenu');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = menu?.classList.toggle('open') ?? false;
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  menu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      menu.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    });
+  });
+</script>
+
+<style>
+  /* Mobile-first: esto de acá es el layout base (chico), sin media query. */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: rgba(8, 6, 12, 0.75);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .topbar-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    min-height: var(--topbar-height);
+  }
+
+  .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--fg);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+  .topbar-logo-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-violet-glow);
+    box-shadow: 0 0 8px var(--accent-violet-glow);
+  }
+
+  .topbar-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .topbar-toggle span {
+    display: block;
+    height: 2px;
+    background: var(--fg);
+    border-radius: 2px;
+  }
+
+  .topbar-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s var(--ease-out);
+  }
+  .topbar-menu.open {
+    max-height: 320px;
+    padding: 8px 20px 20px;
+  }
+  .topbar-menu a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 0;
+  }
+  .topbar-menu a:hover {
+    color: var(--fg);
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-actions-desktop {
+    display: none;
+  }
+  .topbar-actions-mobile {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 8px;
+    padding-top: 14px;
+  }
+
+  .topbar-enter {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .topbar-enter:hover {
+    color: var(--fg);
+  }
+  .topbar-cta {
+    background: var(--fg);
+    color: #0a0612;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 18px;
+    border-radius: var(--radius-pill);
+    transition: transform 0.15s var(--ease-out);
+  }
+  .topbar-cta:hover {
+    transform: translateY(-1px);
+  }
+
+  /* A partir de acá, el layout de escritorio: logo | menú centrado | acciones. */
+  @media (min-width: 900px) {
+    .topbar-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 40px;
+    }
+    .topbar-toggle {
+      display: none;
+    }
+    .topbar-menu {
+      position: static;
+      flex-direction: row;
+      justify-content: center;
+      max-height: none;
+      overflow: visible;
+      background: none;
+      border: none;
+      padding: 0;
+      gap: 32px;
+    }
+    .topbar-menu a {
+      padding: 0;
+    }
+    .topbar-actions-mobile {
+      display: none;
+    }
+    .topbar-actions-desktop {
+      display: flex;
+      justify-self: end;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topbar-menu,
+    .topbar-cta {
+      transition: none;
+    }
+  }
+</style>

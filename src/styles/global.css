@@ -21,6 +21,10 @@ img {
   display: block;
 }
 
+main {
+  padding-top: var(--topbar-height);
+}
+
 button {
   font-family: inherit;
 }
