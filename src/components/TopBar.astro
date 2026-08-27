@@ -1,4 +1,6 @@
 ---
+import Icon from './Icon.astro';
+
 const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
 const appUrl = import.meta.env.PUBLIC_APP_URL;
 const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
@@ -41,6 +43,9 @@ const menuLinks = [
   </div>
 
   <nav class="topbar-menu" id="topbarMenu">
+    <button type="button" class="topbar-menu-close" id="topbarMenuClose" aria-label="Cerrar menú">
+      <Icon name="x" size={18} />
+    </button>
     <div class="topbar-menu-links">
       {menuLinks.map((link) => (
         <a href={link.href}>{link.label}</a>
@@ -56,6 +61,7 @@ const menuLinks = [
 <script>
   const toggle = document.getElementById('topbarToggle');
   const menu = document.getElementById('topbarMenu');
+  const closeBtn = document.getElementById('topbarMenuClose');
 
   // Igual que el modal de cobro: `.topbar` tiene su propio backdrop-filter,
   // que crea un containing block y atrapa el `position: fixed` del menú
@@ -66,6 +72,14 @@ const menuLinks = [
   toggle?.addEventListener('click', () => {
     const isOpen = menu?.classList.toggle('open') ?? false;
     toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // El toggle original queda tapado por el menú una vez abierto (el menú
+  // ahora se superpone al topbar) — este botón vive adentro del panel para
+  // poder cerrarlo sin tener que clickear un link.
+  closeBtn?.addEventListener('click', () => {
+    menu?.classList.remove('open');
+    toggle?.setAttribute('aria-expanded', 'false');
   });
 
   menu?.querySelectorAll('a').forEach((link) => {
@@ -171,6 +185,10 @@ const menuLinks = [
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    /* En mobile viven solo adentro del menú (topbar-menu-actions) — se
+       ocultan con visibility (no display) para que el grid del logo centrado
+       no se mueva al no tener nada en esta columna. */
+    visibility: hidden;
   }
   .topbar-cta {
     position: relative;
@@ -228,10 +246,11 @@ const menuLinks = [
     position: fixed;
     inset: 0;
     /* .topbar-menu ahora es hijo directo de <body> (ver script), así que
-       este z-index compite en el stacking context raíz — tiene que quedar
-       justo debajo de .topbar (20) para que la barra siga visible arriba,
-       pero por encima de cualquier contenido normal de la página. */
-    z-index: 19;
+       este z-index compite en el stacking context raíz — va POR ENCIMA de
+       .topbar (20) para que el panel se superponga a la barra entera. El
+       toggle original queda tapado mientras está abierto; por eso el panel
+       trae su propio botón de cerrar (topbar-menu-close). */
+    z-index: 21;
     background: radial-gradient(circle 200px at var(--menu-origin-x) var(--menu-origin-y), rgba(124, 92, 255, 0.55), transparent 70%),
       rgba(8, 6, 12, 0.85);
     clip-path: circle(0px at var(--menu-origin-x) var(--menu-origin-y));
@@ -244,6 +263,27 @@ const menuLinks = [
     backdrop-filter: blur(24px);
     transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: auto;
+  }
+  .topbar-menu-close {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: none;
+    border: none;
+    color: var(--fg);
+    cursor: pointer;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-menu.open .topbar-menu-close {
+    opacity: 1;
+    transition-delay: 0.15s;
   }
   .topbar-menu-links {
     position: absolute;
@@ -317,6 +357,13 @@ const menuLinks = [
     }
     .topbar-enter {
       font-size: 14px;
+    }
+    .topbar-actions {
+      visibility: visible;
+    }
+    .topbar-menu-close {
+      top: 21px;
+      left: 43px;
     }
     :global(:root) {
       --menu-origin-x: 62px;
