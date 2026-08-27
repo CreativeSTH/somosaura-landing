@@ -3,6 +3,8 @@ export type Accent = 'violet' | 'teal' | 'pink' | 'blue' | 'orange' | 'amber';
 export interface SectionDef {
   id: string;
   eyebrow: string;
+  /** Texto corto para el nav lateral — si no se define, usa `eyebrow` (útil cuando el eyebrow es una frase larga). */
+  navLabel?: string;
   title: string;
   copy: string;
   accent: Accent;
@@ -16,6 +18,7 @@ export const sections: SectionDef[] = [
   {
     id: 'inicio',
     eyebrow: 'Sistema de administración de ventas',
+    navLabel: 'Inicio',
     title: 'No es un POS. Es tu asistente de ventas.',
     copy: 'Un click para vender. Un click para saber cómo va tu negocio.',
     accent: 'violet',

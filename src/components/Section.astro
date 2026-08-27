@@ -63,4 +63,27 @@ const glowVars: Record<string, string> = {
       align-items: center;
     }
   }
+
+  /* Desktop: dos columnas (texto | captura grande), con suficiente padding
+     derecho para que el contenido nunca quede debajo del nav lateral fijo
+     (SiteNav, position: fixed; right: 40px). */
+  @media (min-width: 900px) {
+    .section {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 56px;
+      max-width: 1180px;
+      padding: 80px 240px 80px 60px;
+    }
+    .section :global(.section-header) {
+      flex: 0 0 380px;
+      max-width: 380px;
+    }
+    .section-visual {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+  }
 </style>

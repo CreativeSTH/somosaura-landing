@@ -42,6 +42,12 @@ const { alt, dimmed = false, src } = Astro.props;
   .screenshot-frame.dimmed {
     opacity: 0.6;
   }
+
+  @media (min-width: 900px) {
+    .screenshot-frame {
+      max-width: 560px;
+    }
+  }
   .screenshot-placeholder {
     position: relative;
     z-index: 1;
