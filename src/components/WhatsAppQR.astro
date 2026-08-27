@@ -13,50 +13,178 @@ const svg = await QRCode.toString(whatsappHref, {
 });
 ---
 
-<a
-  class="qr-badge"
-  href={whatsappHref}
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Escaneá para hablar por WhatsApp"
->
-  <span class="qr-badge-code" set:html={svg} />
-</a>
+<div class="qr-scrim" id="qrScrim"></div>
+
+<button type="button" class="qr-badge" id="qrBadge" aria-expanded="false" aria-label="Mostrar QR para hablar por WhatsApp">
+  <span class="qr-badge-clip">
+    <span class="qr-badge-code" set:html={svg} />
+  </span>
+  <span class="qr-badge-glare"></span>
+</button>
+
+<div class="qr-caption" id="qrCaption">
+  <p>Escaneá para hablar por WhatsApp</p>
+  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">o abrí el chat directo →</a>
+</div>
+
+<script>
+  const badge = document.getElementById('qrBadge')!;
+  const scrim = document.getElementById('qrScrim')!;
+  const caption = document.getElementById('qrCaption')!;
+
+  function setOpen(open: boolean) {
+    badge.classList.toggle('is-open', open);
+    scrim.classList.toggle('is-open', open);
+    caption.classList.toggle('is-open', open);
+    badge.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  badge.addEventListener('click', () => {
+    setOpen(!badge.classList.contains('is-open'));
+  });
+
+  scrim.addEventListener('click', () => setOpen(false));
+
+  badge.addEventListener('mousemove', (e) => {
+    const rect = badge.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 14;
+    const ry = (x - 0.5) * 14;
+    badge.style.setProperty('--tilt-rx', `${rx}deg`);
+    badge.style.setProperty('--tilt-ry', `${ry}deg`);
+    badge.style.setProperty('--tilt-gx', `${x * 100}%`);
+    badge.style.setProperty('--tilt-gy', `${y * 100}%`);
+  });
+
+  badge.addEventListener('mouseleave', () => {
+    badge.style.setProperty('--tilt-rx', '0deg');
+    badge.style.setProperty('--tilt-ry', '0deg');
+  });
+</script>
 
 <style>
+  .qr-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(4, 3, 8, 0.55);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .qr-scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .qr-badge {
+    --qr-size: 60px;
+    --qr-radius: 14px;
     position: fixed;
     left: 20px;
     bottom: 20px;
     z-index: 50;
+    width: var(--qr-size);
+    height: var(--qr-size);
+    border-radius: var(--qr-radius);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.15), 0 0 48px rgba(255, 255, 255, 0.04);
+    border: none;
+    padding: 10px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(8px);
-    padding: 8px;
-    transition: transform 0.15s var(--ease-out);
+    transform: perspective(1000px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) scale(var(--qr-scale, 1));
+    transition:
+      width 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      height 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      border-radius 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.3s var(--ease-out);
   }
   .qr-badge:hover {
-    transform: translateY(-2px);
+    --qr-scale: 1.08;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), 0 0 60px rgba(124, 92, 255, 0.18);
+  }
+  .qr-badge.is-open {
+    --qr-size: 200px;
+    --qr-radius: 32px;
+    left: 32px;
+    bottom: 32px;
+  }
+  .qr-badge-clip {
+    position: absolute;
+    inset: 10px;
+    border-radius: calc(var(--qr-radius) - 6px);
+    overflow: hidden;
+    display: flex;
   }
   .qr-badge-code :global(svg) {
     display: block;
     width: 100%;
     height: 100%;
   }
+  .qr-badge-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle 90px at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 70%);
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .qr-badge:hover .qr-badge-glare {
+    opacity: 1;
+  }
+
+  .qr-caption {
+    position: fixed;
+    left: 92px;
+    bottom: 34px;
+    z-index: 50;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-out) 0.15s, left 0.45s cubic-bezier(0.25, 1, 0.5, 1), bottom 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .qr-caption.is-open {
+    left: 248px;
+    bottom: 40px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .qr-caption p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .qr-caption a {
+    font-size: 11px;
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .qr-caption a:hover {
+    color: var(--accent-violet);
+  }
 
   @media (max-width: 900px) {
-    .qr-badge {
+    .qr-badge,
+    .qr-scrim,
+    .qr-caption {
       display: none;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .qr-badge {
+    .qr-badge,
+    .qr-badge-glare,
+    .qr-scrim,
+    .qr-caption {
       transition: none;
     }
   }
