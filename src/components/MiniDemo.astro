@@ -1,8 +1,10 @@
 ---
+import Icon from './Icon.astro';
+
 const products = [
-  { name: 'Gaseosa', price: 8500, icon: '🥤' },
-  { name: 'Pan', price: 4200, icon: '🍞' },
-  { name: 'Combo', price: 15000, icon: '🍱' },
+  { name: 'Gaseosa', price: 8500, icon: 'cup-soda' },
+  { name: 'Pan', price: 4200, icon: 'wheat' },
+  { name: 'Combo', price: 15000, icon: 'package' },
 ];
 ---
 
@@ -11,7 +13,7 @@ const products = [
   <div class="mini-products">
     {products.map((p) => (
       <button type="button" class="mini-product" data-price={p.price}>
-        <span class="mini-product-icon">{p.icon}</span>
+        <span class="mini-product-icon"><Icon name={p.icon} size={20} /></span>
         <span class="mini-product-name">{p.name}</span>
         <span class="mini-product-price">${p.price.toLocaleString('es-CO')}</span>
       </button>
@@ -110,7 +112,8 @@ const products = [
     transition: transform 0.15s var(--ease-out), border-color 0.15s;
   }
   .mini-product-icon {
-    font-size: 20px;
+    display: flex;
+    color: var(--accent-violet);
     margin-bottom: 4px;
   }
   .mini-product-name {

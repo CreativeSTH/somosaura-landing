@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import type { BadgeTone } from '../lib/sections';
 
 interface Props {
@@ -30,7 +31,7 @@ function sparklinePoints(data: number[]): string {
 
 <div class="feature-card">
   <div class="feature-card-top">
-    <span class="feature-card-icon">{icon}</span>
+    <span class="feature-card-icon"><Icon name={icon} size={18} /></span>
     {badgeText && <span class={`feature-card-badge tone-${badgeTone}`}>{badgeText}</span>}
   </div>
   <div class="feature-card-value">{value}</div>
@@ -73,7 +74,7 @@ function sparklinePoints(data: number[]): string {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    color: var(--section-accent, var(--accent-violet));
     background: color-mix(in srgb, var(--section-accent, var(--accent-violet)) 22%, transparent);
     box-shadow: 0 0 16px color-mix(in srgb, var(--section-accent-glow, var(--accent-violet-glow)) 45%, transparent);
   }

@@ -34,11 +34,15 @@ const { cards, dimmed = false } = Astro.props;
   .card-cluster > :global(.feature-card) {
     width: 100%;
   }
-  .card-cluster > :global(.feature-card:nth-child(odd)) {
-    transform: rotate(-2deg) translateX(-8px);
+  /* Rotación distinta por posición — mismo criterio "mazo tirado" que el mini-demo. */
+  .card-cluster > :global(.feature-card:nth-child(1)) {
+    transform: rotate(-3deg) translateX(-10px);
   }
-  .card-cluster > :global(.feature-card:nth-child(even)) {
-    transform: rotate(2deg) translateX(8px);
+  .card-cluster > :global(.feature-card:nth-child(2)) {
+    transform: rotate(2.5deg) translateX(10px);
+  }
+  .card-cluster > :global(.feature-card:nth-child(3)) {
+    transform: rotate(-1.5deg) translateX(-4px);
   }
   .card-cluster > :global(.feature-card:not(:first-child)) {
     margin-top: -18px;

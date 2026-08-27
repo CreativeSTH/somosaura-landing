@@ -2,6 +2,7 @@ export type Accent = 'violet' | 'teal' | 'pink' | 'blue' | 'orange' | 'amber';
 export type BadgeTone = 'positive' | 'neutral' | 'info';
 
 export interface FeatureCardData {
+  /** Nombre de ícono de src/components/Icon.astro (no emoji). */
   icon: string;
   title: string;
   value: string;
@@ -34,9 +35,9 @@ export const sections: SectionDef[] = [
     accent: 'violet',
     visual: 'cards',
     cards: [
-      { icon: '🛍️', title: 'Ventas de hoy', value: '$2.380', badgeText: '+18%', badgeTone: 'positive' },
-      { icon: '📈', title: 'Total del mes', value: '$4.930.000', sparkline: [3, 5, 4, 7, 6, 9, 8, 10] },
-      { icon: '📦', title: 'Productos activos', value: '7' },
+      { icon: 'shopping-bag', title: 'Ventas de hoy', value: '$2.380', badgeText: '+18%', badgeTone: 'positive' },
+      { icon: 'trending-up', title: 'Total del mes', value: '$4.930.000', sparkline: [3, 5, 4, 7, 6, 9, 8, 10] },
+      { icon: 'package', title: 'Productos activos', value: '7' },
     ],
   },
   {
@@ -56,12 +57,14 @@ export const sections: SectionDef[] = [
     visual: 'cards',
     cards: [
       {
-        icon: '🛵',
+        icon: 'truck',
         title: 'Sebastian Torres · Calle 123 #45-67',
         value: 'En camino',
         badgeText: 'Nuevo → En camino',
         badgeTone: 'info',
       },
+      { icon: 'bell', title: 'Aviso en tiempo real', value: 'El cliente lo ve al instante', badgeText: 'En vivo', badgeTone: 'positive' },
+      { icon: 'check-circle', title: 'María Gómez · El Poblado', value: 'Entregado', badgeText: 'Completado', badgeTone: 'positive' },
     ],
   },
   {
@@ -72,8 +75,9 @@ export const sections: SectionDef[] = [
     accent: 'pink',
     visual: 'cards',
     cards: [
-      { icon: '📋', title: 'Monello por kilo', value: 'Agregado hoy', badgeText: 'Pendiente', badgeTone: 'neutral' },
-      { icon: '📋', title: 'Churu', value: 'Agregado hoy', badgeText: 'Pedido', badgeTone: 'info' },
+      { icon: 'clipboard-list', title: 'Monello por kilo', value: 'Agregado hoy', badgeText: 'Pendiente', badgeTone: 'neutral' },
+      { icon: 'clipboard-list', title: 'Churu', value: 'Agregado hoy', badgeText: 'Pedido', badgeTone: 'info' },
+      { icon: 'check-circle', title: 'Monello cachorros', value: 'Stock actualizado', badgeText: 'Ingresado', badgeTone: 'positive' },
     ],
   },
   {
@@ -84,8 +88,9 @@ export const sections: SectionDef[] = [
     accent: 'blue',
     visual: 'cards',
     cards: [
-      { icon: '💳', title: 'Métodos activos', value: 'QR · Nequi · PSE · Tarjeta' },
-      { icon: '✅', title: 'Pago confirmado', value: '$45.000', badgeText: 'Automático', badgeTone: 'positive' },
+      { icon: 'credit-card', title: 'Métodos activos', value: 'QR · Nequi · PSE · Tarjeta' },
+      { icon: 'check-circle', title: 'Pago confirmado', value: '$45.000', badgeText: 'Automático', badgeTone: 'positive' },
+      { icon: 'zap', title: 'Confirmación automática', value: 'Sin marcar nada a mano', badgeText: 'Webhook', badgeTone: 'info' },
     ],
   },
   {
@@ -96,8 +101,9 @@ export const sections: SectionDef[] = [
     accent: 'orange',
     visual: 'cards',
     cards: [
-      { icon: '🎨', title: 'Plantilla activa', value: 'Atelier' },
-      { icon: '🟢', title: 'Tienda online', value: 'Activa', badgeText: 'Publicada', badgeTone: 'positive' },
+      { icon: 'palette', title: 'Plantilla activa', value: 'Atelier' },
+      { icon: 'store', title: 'Tienda online', value: 'Activa', badgeText: 'Publicada', badgeTone: 'positive' },
+      { icon: 'refresh-cw', title: 'Catálogo', value: 'Se actualiza con tu stock', badgeText: 'Automático', badgeTone: 'positive' },
     ],
   },
   {
@@ -109,6 +115,10 @@ export const sections: SectionDef[] = [
     badge: 'Próximamente',
     visual: 'cards',
     dimmedCards: true,
-    cards: [{ icon: '🧾', title: 'Facturación electrónica', value: 'Próximamente', badgeText: 'En camino', badgeTone: 'neutral' }],
+    cards: [
+      { icon: 'receipt', title: 'Facturación electrónica', value: 'Próximamente', badgeText: 'En camino', badgeTone: 'neutral' },
+      { icon: 'clock', title: 'Cumplimiento DIAN', value: 'En desarrollo' },
+      { icon: 'receipt', title: 'Lanzamiento', value: 'Muy pronto' },
+    ],
   },
 ];
