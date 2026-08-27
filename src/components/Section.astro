@@ -1,0 +1,55 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import ScreenshotFrame from './ScreenshotFrame.astro';
+import type { SectionDef } from '../lib/sections';
+
+interface Props {
+  section: SectionDef;
+}
+
+const { section } = Astro.props;
+
+const accentVars: Record<string, string> = {
+  violet: '--accent-violet',
+  teal: '--accent-teal',
+  pink: '--accent-pink',
+  blue: '--accent-blue',
+  orange: '--accent-orange',
+  amber: '--accent-amber',
+};
+const glowVars: Record<string, string> = {
+  violet: '--accent-violet-glow',
+  teal: '--accent-teal-glow',
+  pink: '--accent-pink-glow',
+  blue: '--accent-blue-glow',
+  orange: '--accent-orange-glow',
+  amber: '--accent-amber-glow',
+};
+---
+
+<section
+  id={section.id}
+  data-section-id={section.id}
+  class="section"
+  style={`--section-accent: var(${accentVars[section.accent]}); --section-accent-glow: var(${glowVars[section.accent]});`}
+>
+  <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
+  <div class="section-visual" data-visual-kind={section.visual}>
+    {section.visual === 'screenshot' && <ScreenshotFrame alt={section.screenshotAlt} />}
+    {section.visual === 'coming-soon' && <ScreenshotFrame alt={section.screenshotAlt} dimmed />}
+    {section.visual === 'demo' && <slot name="demo" />}
+  </div>
+</section>
+
+<style>
+  .section {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    padding: 60px 24px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+</style>

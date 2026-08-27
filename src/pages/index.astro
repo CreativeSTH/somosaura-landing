@@ -1,9 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Section from '../components/Section.astro';
+import { sections } from '../lib/sections';
 ---
 
 <Layout>
   <main>
-    <p>Contenido real llega en la Tarea 5.</p>
+    {sections.map((section) => (
+      <Section section={section} />
+    ))}
   </main>
 </Layout>
