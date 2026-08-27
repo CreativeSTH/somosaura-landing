@@ -24,11 +24,22 @@ const products = [
     <span id="miniCartTotal">$0</span>
   </div>
   <button type="button" class="mini-cobrar" id="miniCobrarBtn">Cobrar</button>
+</div>
 
-  <!-- Diálogo 1: cuánto recibe y cuánto devuelve -->
-  <div class="mini-overlay mini-pay-dialog" id="miniPayDialog">
+<!-- Modal de cobro — a nivel de página, no dentro de la tarjeta chica: bloquea y difumina el resto del sitio mientras está abierto. -->
+<div class="mini-modal-backdrop" id="miniModalBackdrop">
+  <!-- Panel 1: método fijo, cuánto recibe y cuánto devuelve -->
+  <div class="mini-modal-panel mini-pay-panel" id="miniPayPanel">
     <p class="mini-dialog-eyebrow">Total a cobrar</p>
     <p class="mini-dialog-total" id="miniPayTotal">$0</p>
+
+    <div class="mini-dialog-method-row">
+      <span>Método de pago</span>
+      <span class="mini-dialog-method-value">
+        <Icon name="lock" size={11} />
+        Efectivo
+      </span>
+    </div>
 
     <label class="mini-dialog-label" for="miniPayReceived">Recibe</label>
     <input type="number" inputmode="numeric" class="mini-dialog-input" id="miniPayReceived" placeholder="$0" />
@@ -44,14 +55,14 @@ const products = [
     </div>
   </div>
 
-  <!-- Diálogo 2: imprimiendo factura -->
-  <div class="mini-overlay mini-print-dialog" id="miniPrintDialog">
+  <!-- Panel 2: imprimiendo factura -->
+  <div class="mini-modal-panel mini-print-panel" id="miniPrintPanel">
     <span class="mini-spinner"></span>
     <p>Imprimiendo factura…</p>
   </div>
 
-  <!-- Alerta final -->
-  <div class="mini-overlay mini-alert-dialog" id="miniAlertDialog">
+  <!-- Panel 3: alerta final -->
+  <div class="mini-modal-panel mini-alert-panel" id="miniAlertPanel">
     <span class="mini-alert-icon"><Icon name="check-circle" size={30} /></span>
     <p class="mini-alert-title">Venta finalizada</p>
     <p class="mini-alert-sub">2 clicks, cero pantallas nuevas.</p>
@@ -69,14 +80,37 @@ const products = [
     const countEl = document.getElementById('miniCartCount')!;
     const totalEl = document.getElementById('miniCartTotal')!;
 
-    const payDialog = document.getElementById('miniPayDialog')!;
+    const backdrop = document.getElementById('miniModalBackdrop')!;
+    // Reubicado como hijo directo de <body>: un ancestro con `filter` (el
+    // sistema de reveal de motion.ts anima `.section-visual` con filter/blur)
+    // crea su propio containing block y rompe `position: fixed` si el modal
+    // se queda anidado ahí adentro.
+    document.body.appendChild(backdrop);
+
+    const payPanel = document.getElementById('miniPayPanel')!;
+    const printPanel = document.getElementById('miniPrintPanel')!;
+    const alertPanel = document.getElementById('miniAlertPanel')!;
+    const panels = [payPanel, printPanel, alertPanel];
+
     const payTotalEl = document.getElementById('miniPayTotal')!;
     const receivedInput = document.getElementById('miniPayReceived') as HTMLInputElement;
     const changeEl = document.getElementById('miniPayChange')!;
     const confirmBtn = document.getElementById('miniPayConfirm') as HTMLButtonElement;
 
-    const printDialog = document.getElementById('miniPrintDialog')!;
-    const alertDialog = document.getElementById('miniAlertDialog')!;
+    function showPanel(panel: HTMLElement | null) {
+      panels.forEach((p) => p.classList.toggle('show', p === panel));
+    }
+
+    function openModal() {
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+      showPanel(null);
+    }
 
     function render() {
       countEl.textContent = `${cart.items.length} items`;
@@ -105,25 +139,24 @@ const products = [
       payTotalEl.textContent = formatCOP(total);
       receivedInput.value = String(suggestReceived(total));
       updateChange();
-      payDialog.classList.add('show');
+      openModal();
+      showPanel(payPanel);
     });
 
     receivedInput.addEventListener('input', updateChange);
 
     document.getElementById('miniPayCancel')?.addEventListener('click', () => {
-      payDialog.classList.remove('show');
+      closeModal();
     });
 
     confirmBtn.addEventListener('click', () => {
-      payDialog.classList.remove('show');
-      printDialog.classList.add('show');
+      showPanel(printPanel);
 
       setTimeout(() => {
-        printDialog.classList.remove('show');
-        alertDialog.classList.add('show');
+        showPanel(alertPanel);
 
         setTimeout(() => {
-          alertDialog.classList.remove('show');
+          closeModal();
           cart.clear();
           root.querySelectorAll('.mini-product.added').forEach((el) => el.classList.remove('added'));
           render();
@@ -232,26 +265,63 @@ const products = [
     font-size: 13px;
   }
 
-  /* Los tres diálogos comparten la misma base: cubren la tarjeta entera. */
-  .mini-overlay {
-    position: absolute;
+  /* Modal a nivel de página: fixed (no absolute) para escapar de .mini-demo y
+     cubrir/bloquear todo el sitio, con blur del contenido de atrás. */
+  .mini-modal-backdrop {
+    position: fixed;
     inset: 0;
-    background: rgba(8, 6, 12, 0.94);
-    backdrop-filter: blur(6px);
-    border-radius: 14px;
+    z-index: 100;
+    background: rgba(4, 3, 8, 0.6);
+    backdrop-filter: blur(10px);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 22px;
+    padding: 20px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s var(--ease-out);
+    transition: opacity 0.25s var(--ease-out);
   }
-  .mini-overlay.show {
+  .mini-modal-backdrop.open {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .mini-modal-panel {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 340px;
+    background: #0d0a14;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 26px 24px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+  }
+  .mini-modal-panel.show {
+    display: flex;
+  }
+
+  .mini-dialog-method-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--fg-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 16px;
+  }
+  .mini-dialog-method-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--fg);
+    font-weight: 700;
   }
 
   .mini-dialog-eyebrow {
@@ -348,7 +418,7 @@ const products = [
       transform: rotate(360deg);
     }
   }
-  .mini-print-dialog p {
+  .mini-print-panel p {
     font-size: 13px;
     color: var(--fg-muted);
     margin: 0;
