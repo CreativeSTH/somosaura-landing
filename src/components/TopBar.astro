@@ -183,17 +183,19 @@ const menuLinks = [
     color: var(--fg);
   }
   .topbar-cta {
-    background: var(--fg);
+    background: var(--accent-violet);
     color: #0a0612;
     text-decoration: none;
     font-size: 13px;
     font-weight: 700;
     padding: 9px 18px;
     border-radius: var(--radius-pill);
-    transition: transform 0.15s var(--ease-out);
+    box-shadow: 0 0 16px rgba(124, 92, 255, 0.4);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
   .topbar-cta:hover {
     transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(124, 92, 255, 0.55);
   }
 
   /* A partir de acá, el layout de escritorio: logo | menú centrado | acciones. */
