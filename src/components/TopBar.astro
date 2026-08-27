@@ -177,7 +177,25 @@ const menuLinks = [
     max-height: 240px;
     padding: 8px 20px 20px;
   }
+  /* Resplandor radial desde la esquina donde está la hamburguesa — misma técnica
+     que el "menu_scrim" de rainbow.me, con el violeta de marca en vez de negro. */
+  .topbar-menu::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: -40px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle at top left, rgba(124, 92, 255, 0.35), transparent 70%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+  }
+  .topbar-menu.open::before {
+    opacity: 1;
+  }
   .topbar-menu a {
+    position: relative;
     color: var(--fg-muted);
     text-decoration: none;
     font-size: 14px;
