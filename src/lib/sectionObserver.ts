@@ -1,3 +1,5 @@
+import { createIntersectionTracker } from './intersectionTracker';
+
 export interface SectionObserverOptions {
   onActivate: (id: string) => void;
   onReveal: (id: string) => void;
@@ -5,18 +7,19 @@ export interface SectionObserverOptions {
 }
 
 export function observeSections(options: SectionObserverOptions): IntersectionObserver {
-  const revealed = new Set<string>();
+  const tracker = createIntersectionTracker();
 
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         const id = (entry.target as HTMLElement).dataset.sectionId;
-        if (!id || !entry.isIntersecting) continue;
+        if (!id) continue;
 
-        options.onActivate(id);
+        if (entry.isIntersecting) {
+          options.onActivate(id);
+        }
 
-        if (!revealed.has(id)) {
-          revealed.add(id);
+        if (tracker.shouldReveal(id, entry.isIntersecting)) {
           options.onReveal(id);
         }
       }
