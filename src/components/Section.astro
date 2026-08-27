@@ -35,7 +35,9 @@ const glowVars: Record<string, string> = {
 >
   <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
   <div class="section-visual" data-visual-kind={section.visual}>
-    {section.visual === 'screenshot' && <ScreenshotFrame alt={section.screenshotAlt} />}
+    {section.visual === 'screenshot' && (
+      <ScreenshotFrame alt={section.screenshotAlt} src={section.screenshotSrc} />
+    )}
     {section.visual === 'coming-soon' && <ScreenshotFrame alt={section.screenshotAlt} dimmed />}
     {section.visual === 'demo' && <slot name="demo" />}
   </div>

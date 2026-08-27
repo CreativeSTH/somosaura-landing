@@ -2,13 +2,18 @@
 interface Props {
   alt: string;
   dimmed?: boolean;
+  src?: string;
 }
 
-const { alt, dimmed = false } = Astro.props;
+const { alt, dimmed = false, src } = Astro.props;
 ---
 
 <div class:list={['screenshot-frame', { dimmed }]}>
-  <span class="screenshot-placeholder">[captura real: {alt}]</span>
+  {src ? (
+    <img class="screenshot-image" src={src} alt={alt} loading="lazy" />
+  ) : (
+    <span class="screenshot-placeholder">[captura real: {alt}]</span>
+  )}
 </div>
 
 <style>
@@ -44,5 +49,13 @@ const { alt, dimmed = false } = Astro.props;
     color: rgba(255, 255, 255, 0.55);
     text-align: center;
     padding: 0 16px;
+  }
+  .screenshot-image {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 </style>

@@ -9,6 +9,7 @@ export interface SectionDef {
   badge?: string;
   visual: 'screenshot' | 'demo' | 'coming-soon';
   screenshotAlt: string;
+  screenshotSrc?: string;
 }
 
 export const sections: SectionDef[] = [
@@ -20,6 +21,7 @@ export const sections: SectionDef[] = [
     accent: 'violet',
     visual: 'screenshot',
     screenshotAlt: 'Dashboard general de AURA',
+    screenshotSrc: '/screenshots/captura-dashboard.png',
   },
   {
     id: 'punto-venta',
@@ -37,7 +39,8 @@ export const sections: SectionDef[] = [
     copy: 'Se crea junto a la venta y avisa en vivo cuando cambia de estado.',
     accent: 'teal',
     visual: 'screenshot',
-    screenshotAlt: 'Gestión de domicilios en AURA',
+    screenshotAlt: 'Domicilio en curso, gestionado desde el punto de venta',
+    screenshotSrc: '/screenshots/captura-domicilios.png',
   },
   {
     id: 'pedidos',
@@ -47,6 +50,7 @@ export const sections: SectionDef[] = [
     accent: 'pink',
     visual: 'screenshot',
     screenshotAlt: 'Lista de pedidos en AURA',
+    screenshotSrc: '/screenshots/captura-pedidos.png',
   },
   {
     id: 'wompi',
@@ -55,7 +59,8 @@ export const sections: SectionDef[] = [
     copy: 'La venta se confirma sola cuando llega el pago. Nadie marca nada a mano.',
     accent: 'blue',
     visual: 'screenshot',
-    screenshotAlt: 'Cobro con Wompi en AURA',
+    screenshotAlt: 'Configuración de la pasarela Wompi en AURA',
+    screenshotSrc: '/screenshots/captura-womppi.png',
   },
   {
     id: 'tienda',
@@ -64,7 +69,8 @@ export const sections: SectionDef[] = [
     copy: 'Se arma solo con lo que tenés en stock — sin trabajo extra.',
     accent: 'orange',
     visual: 'screenshot',
-    screenshotAlt: 'Tienda online de AURA',
+    screenshotAlt: 'Configuración de la tienda online de AURA',
+    screenshotSrc: '/screenshots/captura-tienda.png',
   },
   {
     id: 'facturacion',
