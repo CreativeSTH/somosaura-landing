@@ -146,14 +146,16 @@ const menuLinks = [
     max-height: 320px;
     padding: 8px 20px 20px;
   }
-  .topbar-menu a {
+  /* :not() excluye los links de accion (Entra / Prueba gratis) — tienen su propio
+     estilo de boton mas abajo, y sin esto esta regla los pisaba por especificidad. */
+  .topbar-menu a:not(.topbar-enter):not(.topbar-cta) {
     color: var(--fg-muted);
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
     padding: 10px 0;
   }
-  .topbar-menu a:hover {
+  .topbar-menu a:not(.topbar-enter):not(.topbar-cta):hover {
     color: var(--fg);
   }
 
