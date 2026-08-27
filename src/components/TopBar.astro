@@ -32,8 +32,9 @@ const menuLinks = [
     </a>
 
     <div class="topbar-actions">
-      <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+      <a class="topbar-cta" id="topbarCta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
         Prueba gratis
+        <span class="topbar-cta-glare"></span>
       </a>
       <a class="topbar-enter" href={appUrl}>Entrar</a>
     </div>
@@ -62,6 +63,24 @@ const menuLinks = [
       menu.classList.remove('open');
       toggle?.setAttribute('aria-expanded', 'false');
     });
+  });
+
+  // Mismo tilt 3D + glare que sigue al mouse que usa el QR.
+  const cta = document.getElementById('topbarCta');
+  cta?.addEventListener('mousemove', (e) => {
+    const rect = cta.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 12;
+    const ry = (x - 0.5) * 12;
+    cta.style.setProperty('--tilt-rx', `${rx}deg`);
+    cta.style.setProperty('--tilt-ry', `${ry}deg`);
+    cta.style.setProperty('--tilt-gx', `${x * 100}%`);
+    cta.style.setProperty('--tilt-gy', `${y * 100}%`);
+  });
+  cta?.addEventListener('mouseleave', () => {
+    cta.style.setProperty('--tilt-rx', '0deg');
+    cta.style.setProperty('--tilt-ry', '0deg');
   });
 </script>
 
@@ -136,24 +155,38 @@ const menuLinks = [
     justify-self: end;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
+    align-items: center;
   }
   .topbar-cta {
-    background: var(--accent-violet);
-    color: #0a0612;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--fg);
     text-decoration: none;
     font-size: 13px;
     font-weight: 700;
     padding: 9px 18px;
     border-radius: var(--radius-pill);
-    border: none;
-    box-shadow: 0 0 16px rgba(124, 92, 255, 0.4);
-    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transform: perspective(600px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg));
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s var(--ease-out), background 0.15s var(--ease-out);
   }
   .topbar-cta:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 20px rgba(124, 92, 255, 0.55);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), 0 0 30px rgba(124, 92, 255, 0.18);
+  }
+  .topbar-cta-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle 70px at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%);
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-cta:hover .topbar-cta-glare {
+    opacity: 1;
   }
   .topbar-enter {
     color: var(--fg-muted);
@@ -236,9 +269,6 @@ const menuLinks = [
       width: 26px;
       height: 26px;
       box-shadow: 0 0 14px var(--accent-violet-glow), 0 0 34px rgba(124, 92, 255, 0.65), 0 0 60px rgba(124, 92, 255, 0.35);
-    }
-    .topbar-actions {
-      gap: 8px;
     }
     .topbar-cta {
       font-size: 16px;
