@@ -3,6 +3,7 @@ import { createIntersectionTracker } from './intersectionTracker';
 export interface SectionObserverOptions {
   onActivate: (id: string) => void;
   onReveal: (id: string) => void;
+  onHide: (id: string) => void;
   threshold?: number;
 }
 
@@ -19,9 +20,9 @@ export function observeSections(options: SectionObserverOptions): IntersectionOb
           options.onActivate(id);
         }
 
-        if (tracker.shouldReveal(id, entry.isIntersecting)) {
-          options.onReveal(id);
-        }
+        const transition = tracker.update(id, entry.isIntersecting);
+        if (transition === 'entered') options.onReveal(id);
+        if (transition === 'exited') options.onHide(id);
       }
     },
     { threshold: options.threshold ?? 0.5 }

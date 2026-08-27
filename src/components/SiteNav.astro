@@ -12,7 +12,7 @@ import { sections } from '../lib/sections';
 
 <script>
   import { observeSections } from '../lib/sectionObserver';
-  import { revealSection } from '../lib/motion';
+  import { revealSection, hideSection } from '../lib/motion';
 
   const navItems = document.querySelectorAll<HTMLButtonElement>('.site-nav-item');
 
@@ -31,7 +31,7 @@ import { sections } from '../lib/sections';
     });
   });
 
-  observeSections({ onActivate: setActive, onReveal: revealSection });
+  observeSections({ onActivate: setActive, onReveal: revealSection, onHide: hideSection });
 </script>
 
 <style>
