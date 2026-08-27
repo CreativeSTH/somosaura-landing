@@ -28,7 +28,7 @@ const menuLinks = [
 
     <a class="topbar-logo" href="#inicio" aria-label="AURA — Inicio">
       <span class="topbar-logo-dot"></span>
-      AURA
+      aura
     </a>
 
     <div class="topbar-actions">
@@ -116,19 +116,20 @@ const menuLinks = [
     justify-self: center;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 800;
-    font-size: 16px;
+    gap: 10px;
+    font-family: 'M PLUS U', var(--font-sans);
+    font-weight: 600;
+    font-size: 19px;
     color: var(--fg);
     text-decoration: none;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
   .topbar-logo-dot {
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: var(--accent-violet-glow);
-    box-shadow: 0 0 8px var(--accent-violet-glow);
+    box-shadow: 0 0 10px var(--accent-violet-glow), 0 0 24px rgba(124, 92, 255, 0.65), 0 0 44px rgba(124, 92, 255, 0.35);
   }
 
   .topbar-actions {
