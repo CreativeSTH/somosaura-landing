@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import TopBar from '../components/TopBar.astro';
+import WhatsAppQR from '../components/WhatsAppQR.astro';
 
 interface Props {
   title?: string;
@@ -36,6 +37,7 @@ const {
   </head>
   <body>
     <TopBar />
+    <WhatsAppQR />
     <slot />
   </body>
 </html>

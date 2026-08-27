@@ -1,0 +1,63 @@
+---
+import QRCode from 'qrcode';
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+// Generado en build time — sin depender de un servicio externo de QR en runtime.
+const svg = await QRCode.toString(whatsappHref, {
+  type: 'svg',
+  margin: 0,
+  color: { dark: '#f7f4ff', light: '#0000' },
+});
+---
+
+<a
+  class="qr-badge"
+  href={whatsappHref}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Escaneá para hablar por WhatsApp"
+>
+  <span class="qr-badge-code" set:html={svg} />
+</a>
+
+<style>
+  .qr-badge {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    padding: 8px;
+    transition: transform 0.15s var(--ease-out);
+  }
+  .qr-badge:hover {
+    transform: translateY(-2px);
+  }
+  .qr-badge-code :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 900px) {
+    .qr-badge {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qr-badge {
+      transition: none;
+    }
+  }
+</style>
