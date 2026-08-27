@@ -40,9 +40,11 @@ const menuLinks = [
   </div>
 
   <nav class="topbar-menu" id="topbarMenu">
-    {menuLinks.map((link) => (
-      <a href={link.href}>{link.label}</a>
-    ))}
+    <div class="topbar-menu-links">
+      {menuLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+    </div>
   </nav>
 </header>
 
@@ -74,9 +76,13 @@ const menuLinks = [
     z-index: 20;
     background: rgba(8, 6, 12, 0.75);
     backdrop-filter: blur(10px);
+    /* Centro del clip-path circular del menú — coincide con el centro de la hamburguesa. */
+    --menu-origin-x: 39px;
+    --menu-origin-y: 32px;
   }
   .topbar-inner {
     position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -158,52 +164,49 @@ const menuLinks = [
     color: var(--fg);
   }
 
-  /* Menú desplegable de la hamburguesa — mismo comportamiento en cualquier ancho. */
+  /* Menú de la hamburguesa: no es un panel que se desliza — es un círculo que
+     crece desde el centro de la hamburguesa (clip-path), con estilo vidrio
+     igual que las tarjetas de producto. Como el origen del círculo está en la
+     esquina superior izquierda del panel, lo que se ve mientras crece es
+     literalmente un cuarto de círculo, superpuesto al topbar. */
   .topbar-menu {
     position: absolute;
-    top: 100%;
+    top: 0;
     left: 0;
-    right: 0;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    padding: 0 20px;
-    gap: 4px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s var(--ease-out);
-  }
-  .topbar-menu.open {
-    max-height: 240px;
-    padding: 8px 20px 20px;
-  }
-  /* Sombra radial oscura desde la esquina de la hamburguesa — misma técnica que
-     el "menu_scrim" de rainbow.me (un negro que se degrada). El de ellos es negro
-     puro porque su fondo es gris oscuro (#111); el nuestro ya es casi negro
-     (#08060c), así que un negro puro ahí encima no se notaría — uso un violeta
-     muy oscuro en vez de neutro, para que el tinte se perciba igual. */
-  .topbar-menu::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    left: -40px;
+    z-index: 1;
     width: 320px;
     height: 320px;
-    background: radial-gradient(circle at top left, rgba(20, 10, 40, 0.9), transparent 70%);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    clip-path: circle(0px at var(--menu-origin-x) var(--menu-origin-y));
+    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s var(--ease-out);
   }
-  .topbar-menu.open::before {
+  .topbar-menu.open {
+    clip-path: circle(240px at var(--menu-origin-x) var(--menu-origin-y));
+    pointer-events: auto;
+  }
+  .topbar-menu-links {
+    position: absolute;
+    top: 74px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-menu.open .topbar-menu-links {
     opacity: 1;
+    transition-delay: 0.15s;
   }
   .topbar-menu a {
-    position: relative;
     color: var(--fg-muted);
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    padding: 10px 0;
+    padding: 8px 0;
   }
   .topbar-menu a:hover {
     color: var(--fg);
@@ -213,19 +216,14 @@ const menuLinks = [
     .topbar-inner {
       padding: 0 40px;
     }
-    .topbar-menu {
-      max-width: 220px;
-      left: 40px;
-      right: auto;
-      border-radius: 0 0 14px 14px;
-    }
-    .topbar-menu.open {
-      max-height: 200px;
+    .topbar {
+      --menu-origin-x: 59px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .topbar-menu,
+    .topbar-menu-links,
     .topbar-cta {
       transition: none;
     }
