@@ -1,6 +1,6 @@
 ---
 import SectionHeader from './SectionHeader.astro';
-import ScreenshotFrame from './ScreenshotFrame.astro';
+import FeatureCardCluster from './FeatureCardCluster.astro';
 import type { SectionDef } from '../lib/sections';
 
 interface Props {
@@ -35,10 +35,9 @@ const glowVars: Record<string, string> = {
 >
   <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
   <div class="section-visual" data-visual-kind={section.visual}>
-    {section.visual === 'screenshot' && (
-      <ScreenshotFrame alt={section.screenshotAlt} src={section.screenshotSrc} />
+    {section.visual === 'cards' && section.cards && (
+      <FeatureCardCluster cards={section.cards} dimmed={section.dimmedCards} />
     )}
-    {section.visual === 'coming-soon' && <ScreenshotFrame alt={section.screenshotAlt} dimmed />}
     {section.visual === 'demo' && <slot name="demo" />}
   </div>
 </section>
