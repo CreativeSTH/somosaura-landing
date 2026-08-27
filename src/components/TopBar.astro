@@ -45,6 +45,10 @@ const menuLinks = [
       {menuLinks.map((link) => (
         <a href={link.href}>{link.label}</a>
       ))}
+      <div class="topbar-menu-actions">
+        <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">Prueba gratis</a>
+        <a class="topbar-enter" href={appUrl}>Entrar</a>
+      </div>
     </div>
   </nav>
 </header>
@@ -52,6 +56,12 @@ const menuLinks = [
 <script>
   const toggle = document.getElementById('topbarToggle');
   const menu = document.getElementById('topbarMenu');
+
+  // Igual que el modal de cobro: `.topbar` tiene su propio backdrop-filter,
+  // que crea un containing block y atrapa el `position: fixed` del menú
+  // dentro de la altura del header en vez de toda la pantalla. Lo sacamos
+  // de ahí para que el clip-path cubra la pantalla real.
+  if (menu) document.body.appendChild(menu);
 
   toggle?.addEventListener('click', () => {
     const isOpen = menu?.classList.toggle('open') ?? false;
@@ -95,7 +105,12 @@ const menuLinks = [
     z-index: 20;
     background: rgba(8, 6, 12, 0.75);
     backdrop-filter: blur(10px);
-    /* Centro del clip-path circular del menú — coincide con el centro de la hamburguesa. */
+  }
+  /* Centro del clip-path circular del menú — coincide con el centro de la
+     hamburguesa. En :root (no en .topbar) porque el menú se reubica como
+     hijo directo de <body> por JS (ver script arriba) y necesita heredarlas
+     igual desde ahí. */
+  :global(:root) {
     --menu-origin-x: 39px;
     --menu-origin-y: 32px;
   }
@@ -136,7 +151,6 @@ const menuLinks = [
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: 'M PLUS U', var(--font-sans);
     font-weight: 600;
     font-size: 19px;
     color: var(--fg);
@@ -201,33 +215,41 @@ const menuLinks = [
 
   /* Menú de la hamburguesa: no es un panel que se desliza — es un círculo que
      crece desde el centro de la hamburguesa (clip-path), con estilo vidrio
-     igual que las tarjetas de producto. Como el origen del círculo está en la
-     esquina superior izquierda del panel, lo que se ve mientras crece es
-     literalmente un cuarto de círculo, superpuesto al topbar.
-     Sin backdrop-filter a propósito — recalcular un blur sobre una región que
-     crece con clip-path es pesado y se sentía lageado; en su lugar, un fondo
-     sólido con el mismo degradado radial que el glare del QR al hover. */
+     igual que las tarjetas de producto.
+     Mobile-first: acá ocupa TODA la pantalla (position: fixed; inset: 0) y el
+     radio final usa vmax para cubrir cualquier tamaño de pantalla sin importar
+     la orientación. El blur solo se activa DESPUÉS de que termina de crecer
+     (transition-delay igual a la duración del clip-path) — animar blur y
+     clip-path a la vez es lo que causaba el lag que se sintió antes; así el
+     blur "aparece" una sola vez, ya con el círculo quieto. En desktop
+     (media query más abajo) vuelve a ser el círculo chico en la esquina, sin
+     blur, como ya estaba. */
   .topbar-menu {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle 200px at var(--menu-origin-x) var(--menu-origin-y), rgba(124, 92, 255, 0.55), transparent 70%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    position: fixed;
+    inset: 0;
+    /* .topbar-menu ahora es hijo directo de <body> (ver script), así que
+       este z-index compite en el stacking context raíz — tiene que quedar
+       justo debajo de .topbar (20) para que la barra siga visible arriba,
+       pero por encima de cualquier contenido normal de la página. */
+    z-index: 19;
+    background: radial-gradient(circle 200px at var(--menu-origin-x) var(--menu-origin-y), rgba(124, 92, 255, 0.55), transparent 70%),
+      rgba(8, 6, 12, 0.85);
     clip-path: circle(0px at var(--menu-origin-x) var(--menu-origin-y));
-    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    backdrop-filter: blur(0px);
+    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1), backdrop-filter 0s linear 0.5s;
     pointer-events: none;
   }
   .topbar-menu.open {
-    clip-path: circle(240px at var(--menu-origin-x) var(--menu-origin-y));
+    clip-path: circle(150vmax at var(--menu-origin-x) var(--menu-origin-y));
+    backdrop-filter: blur(24px);
+    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: auto;
   }
   .topbar-menu-links {
     position: absolute;
     top: 74px;
     left: 24px;
+    right: 24px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -247,6 +269,24 @@ const menuLinks = [
   }
   .topbar-menu a:hover {
     color: var(--fg);
+  }
+  /* Solo en mobile: el CTA y "Entrar" se repiten adentro del panel expandido,
+     más grandes y fáciles de tocar. En desktop siguen únicamente en la barra. */
+  .topbar-menu-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .topbar-menu-actions .topbar-cta {
+    font-size: 15px;
+    padding: 12px 24px;
+  }
+  .topbar-menu-actions .topbar-enter {
+    font-size: 13px;
   }
 
   @media (min-width: 900px) {
@@ -278,17 +318,30 @@ const menuLinks = [
     .topbar-enter {
       font-size: 14px;
     }
-    .topbar {
+    :global(:root) {
       --menu-origin-x: 62px;
       --menu-origin-y: 59px;
     }
+    /* En desktop vuelve a ser el círculo chico en la esquina, sin ocupar toda
+       la pantalla ni blur — eso es solo para mobile. */
     .topbar-menu {
+      position: absolute;
+      inset: auto;
+      top: 0;
+      left: 0;
       width: 400px;
       height: 400px;
       background: radial-gradient(circle 450px at var(--menu-origin-x) var(--menu-origin-y), #13151a, transparent 70%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: none;
+      transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .topbar-menu.open {
       clip-path: circle(300px at var(--menu-origin-x) var(--menu-origin-y));
+      backdrop-filter: none;
+    }
+    .topbar-menu-actions {
+      display: none;
     }
   }
 
