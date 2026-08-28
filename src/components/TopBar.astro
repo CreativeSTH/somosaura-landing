@@ -7,9 +7,11 @@ const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
 const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
 
 const menuLinks = [
-  { label: 'Producto', href: '#punto-venta' },
-  { label: 'Funciones', href: '#domicilios' },
-  { label: 'Tienda online', href: '#tienda' },
+  { label: 'Inicio', href: '/' },
+  { label: '¿Qué es Aura?', href: '/que-es-aura' },
+  { label: 'Conoce Aura a Fondo', href: '/nuestro-software' },
+  { label: 'Planes', href: '/planes' },
+  { label: 'Privacidad', href: '/politica-de-privacidad' },
 ];
 ---
 
@@ -28,7 +30,7 @@ const menuLinks = [
       <span></span>
     </button>
 
-    <a class="topbar-logo" href="#inicio" aria-label="AURA — Inicio">
+    <a class="topbar-logo" href="/#inicio" aria-label="AURA — Inicio">
       <span class="topbar-logo-dot"></span>
       aura
     </a>
@@ -373,9 +375,14 @@ const menuLinks = [
       --menu-origin-y: 59px;
     }
     /* En desktop vuelve a ser el círculo chico en la esquina, sin ocupar toda
-       la pantalla ni blur — eso es solo para mobile. */
+       la pantalla ni blur — eso es solo para mobile. Sigue en `fixed` (no
+       `absolute`) porque el menú vive como hijo directo de <body> (ver
+       script arriba): con `absolute` su containing block pasa a ser el
+       documento entero, así que quedaba anclado al top de la PÁGINA y
+       desaparecía de la vista al scrollear — `fixed` lo ancla al viewport,
+       igual que el propio .topbar, así que queda siempre pegado a él. */
     .topbar-menu {
-      position: absolute;
+      position: fixed;
       inset: auto;
       top: 0;
       left: 0;
