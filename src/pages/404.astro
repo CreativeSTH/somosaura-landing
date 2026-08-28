@@ -3,7 +3,11 @@ import Layout from '../layouts/Layout.astro';
 import CTAButton from '../components/CTAButton.astro';
 ---
 
-<Layout title="Página no encontrada — AURA" description="La página que buscás no existe o se movió de lugar.">
+<Layout
+  title="Página no encontrada — AURA"
+  description="La página que buscás no existe o se movió de lugar."
+  noindex
+>
   <main class="not-found">
     <p class="not-found-number" aria-hidden="true">
       4<span class="not-found-dot"></span>4

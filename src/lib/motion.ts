@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 
-const prefersReducedMotion = () =>
+export const prefersReducedMotion = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Debe calzar con el reposo borroso definido en global.css (html.js .js-word / .section-visual). */

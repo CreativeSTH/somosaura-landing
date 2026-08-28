@@ -10,6 +10,10 @@ const products = [
 
 <div class="mini-demo" id="miniDemo">
   <p class="mini-demo-title">Probalo — creá una venta real</p>
+  <div class="mini-cart-icon" id="miniCartIcon" aria-hidden="true">
+    <Icon name="shopping-bag" size={18} />
+    <span class="mini-cart-badge" id="miniCartBadge">0</span>
+  </div>
   <div class="mini-products">
     {products.map((p) => (
       <button type="button" class="mini-product" data-price={p.price}>
@@ -20,11 +24,15 @@ const products = [
     ))}
   </div>
   <div class="mini-cart-row">
-    <span id="miniCartCount">0 items</span>
     <span id="miniCartTotal">$0</span>
   </div>
-  <button type="button" class="mini-cobrar" id="miniCobrarBtn">Cobrar</button>
+  <button type="button" class="mini-cobrar" id="miniCobrarBtn">
+    Cobrar
+    <span class="mini-cobrar-glare"></span>
+  </button>
 </div>
+
+<div class="mini-toast" id="miniToast" role="status" aria-live="polite"></div>
 
 <!-- Modal de cobro — a nivel de página, no dentro de la tarjeta chica: bloquea y difumina el resto del sitio mientras está abierto. -->
 <div class="mini-modal-backdrop" id="miniModalBackdrop">
@@ -70,22 +78,53 @@ const products = [
 </div>
 
 <script>
+  import gsap from 'gsap';
   import { formatCOP } from '../lib/formatCurrency';
   import { createCart } from '../lib/miniDemoCart';
   import { computeChange, suggestReceived } from '../lib/payment';
+  import { prefersReducedMotion } from '../lib/motion';
 
   const root = document.getElementById('miniDemo');
   if (root) {
     const cart = createCart();
-    const countEl = document.getElementById('miniCartCount')!;
     const totalEl = document.getElementById('miniCartTotal')!;
+    const cartIconEl = document.getElementById('miniCartIcon')!;
+    const cartBadgeEl = document.getElementById('miniCartBadge')!;
 
     const backdrop = document.getElementById('miniModalBackdrop')!;
-    // Reubicado como hijo directo de <body>: un ancestro con `filter` (el
+    const toastEl = document.getElementById('miniToast')!;
+    // Reubicados como hijos directos de <body>: un ancestro con `filter` (el
     // sistema de reveal de motion.ts anima `.section-visual` con filter/blur)
-    // crea su propio containing block y rompe `position: fixed` si el modal
-    // se queda anidado ahí adentro.
+    // crea su propio containing block y rompe `position: fixed` si se quedan
+    // anidados ahí adentro.
     document.body.appendChild(backdrop);
+    document.body.appendChild(toastEl);
+
+    let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showToast(message: string) {
+      toastEl.textContent = message;
+      toastEl.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+    }
+
+    const cobrarBtn = document.getElementById('miniCobrarBtn')!;
+    cobrarBtn.addEventListener('mousemove', (e) => {
+      const rect = cobrarBtn.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const rx = (0.5 - y) * 8;
+      const ry = (x - 0.5) * 8;
+      cobrarBtn.style.setProperty('--tilt-rx', `${rx}deg`);
+      cobrarBtn.style.setProperty('--tilt-ry', `${ry}deg`);
+      cobrarBtn.style.setProperty('--tilt-gx', `${x * 100}%`);
+      cobrarBtn.style.setProperty('--tilt-gy', `${y * 100}%`);
+    });
+    cobrarBtn.addEventListener('mouseleave', () => {
+      cobrarBtn.style.setProperty('--tilt-rx', '0deg');
+      cobrarBtn.style.setProperty('--tilt-ry', '0deg');
+    });
 
     const payPanel = document.getElementById('miniPayPanel')!;
     const printPanel = document.getElementById('miniPrintPanel')!;
@@ -113,8 +152,73 @@ const products = [
     }
 
     function render() {
-      countEl.textContent = `${cart.items.length} items`;
       totalEl.textContent = formatCOP(cart.total());
+    }
+
+    // Rebote elástico del ícono del carrito + pop del badge — el "impacto" al
+    // terminar el vuelo (o al instante, con prefers-reduced-motion).
+    function bumpCartBadge() {
+      cartBadgeEl.textContent = String(cart.items.length);
+      cartBadgeEl.classList.add('visible');
+
+      if (prefersReducedMotion()) {
+        gsap.set(cartBadgeEl, { scale: 1 });
+        gsap.set(cartIconEl, { scale: 1 });
+        return;
+      }
+
+      gsap.fromTo(cartBadgeEl, { scale: 0.6 }, { scale: 1, duration: 0.4, ease: 'back.out(2)' });
+      gsap.fromTo(cartIconEl, { scale: 0.85 }, { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.45)' });
+    }
+
+    function resetCartBadge() {
+      cartBadgeEl.textContent = '0';
+      cartBadgeEl.classList.remove('visible');
+    }
+
+    // Clona el ícono del producto clickeado y lo hace "volar" en arco hasta
+    // el ícono del carrito, achicándose a su tamaño y desvaneciéndose al
+    // final — mismo mecanismo que el ejemplo de Motion (motion.dev/examples
+    // /js-add-to-basket), recreado con keyframes de GSAP en vez del
+    // path-plugin de esa librería, para no sumar una dependencia nueva.
+    function flyToCart(productBtn: HTMLButtonElement) {
+      const iconEl = productBtn.querySelector('.mini-product-icon');
+      if (!iconEl) return;
+
+      if (prefersReducedMotion()) {
+        bumpCartBadge();
+        return;
+      }
+
+      const fromRect = iconEl.getBoundingClientRect();
+      const toRect = cartIconEl.getBoundingClientRect();
+
+      const clone = document.createElement('div');
+      clone.className = 'mini-flying-icon';
+      clone.innerHTML = iconEl.innerHTML;
+      clone.style.left = `${fromRect.left}px`;
+      clone.style.top = `${fromRect.top}px`;
+      clone.style.width = `${fromRect.width}px`;
+      clone.style.height = `${fromRect.height}px`;
+      document.body.appendChild(clone);
+
+      const dx = toRect.left + toRect.width / 2 - (fromRect.left + fromRect.width / 2);
+      const dy = toRect.top + toRect.height / 2 - (fromRect.top + fromRect.height / 2);
+      const flyScale = toRect.width / fromRect.width;
+
+      gsap.to(clone, {
+        keyframes: {
+          '0%': { x: 0, y: 0, scale: 1, opacity: 1 },
+          '55%': { x: dx * 0.5, y: dy * 0.5 - 46, scale: (1 + flyScale) / 2, opacity: 1 },
+          '100%': { x: dx, y: dy, scale: flyScale, opacity: 0 },
+        },
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          clone.remove();
+          bumpCartBadge();
+        },
+      });
     }
 
     function updateChange() {
@@ -130,11 +234,15 @@ const products = [
         btn.classList.add('added');
         cart.add(Number(btn.dataset.price));
         render();
+        flyToCart(btn);
       });
     });
 
-    document.getElementById('miniCobrarBtn')?.addEventListener('click', () => {
-      if (cart.items.length === 0) return;
+    cobrarBtn.addEventListener('click', () => {
+      if (cart.items.length === 0) {
+        showToast('Agregá primero productos al carrito');
+        return;
+      }
       const total = cart.total();
       payTotalEl.textContent = formatCOP(total);
       receivedInput.value = String(suggestReceived(total));
@@ -160,6 +268,7 @@ const products = [
           cart.clear();
           root.querySelectorAll('.mini-product.added').forEach((el) => el.classList.remove('added'));
           render();
+          resetCartBadge();
         }, 1800);
       }, 1600);
     });
@@ -188,13 +297,77 @@ const products = [
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--accent-violet);
-    margin: 0 0 12px;
+    margin: 0 0 60px;
     font-weight: 700;
   }
+  .mini-cart-icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--accent-violet);
+  }
+
+  @media (min-width: 900px) {
+    .mini-cart-icon {
+      top: 18px;
+      right: 18px;
+    }
+  }
+
+  .mini-cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--accent-violet);
+    color: #0a0612;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.15s var(--ease-out);
+  }
+
+  .mini-cart-badge.visible {
+    opacity: 1;
+  }
+
+  /* Clon volador del ícono del producto — vive en position:fixed en <body>
+     (no dentro de .mini-demo) para poder recorrer la pantalla libre de
+     cualquier overflow/stacking del contenedor, igual que el modal de cobro
+     y el menú del topbar en este mismo proyecto. */
+  /* :global() porque este elemento se crea con document.createElement en
+     runtime (flyToCart, más abajo) — nunca pasa por el template de Astro,
+     así que nunca recibe el atributo data-astro-cid-* que usa el scoping de
+     estilos por defecto, y una regla scopeada normal jamás lo alcanzaría. */
+  :global(.mini-flying-icon) {
+    position: fixed;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-violet);
+    pointer-events: none;
+    transform-origin: center center;
+  }
+
   .mini-products {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
     padding: 6px 2px;
   }
   .mini-product {
@@ -248,12 +421,27 @@ const products = [
   }
   .mini-cart-row {
     display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--fg-muted);
-    margin-bottom: 12px;
+    justify-content: center;
+    margin-bottom: 22px;
   }
+  .mini-cart-row span {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  @media (min-width: 900px) {
+    .mini-cart-row span {
+      font-size: 30px;
+    }
+  }
+  /* Mismo hover 3D (tilt + glare al cursor) que .qr-badge en WhatsAppQR.astro
+     — el glare acá es oscuro en vez de blanco (multiply en vez de screen)
+     porque este botón ya es un fondo casi blanco, un brillo blanco encima no
+     se vería. */
   .mini-cobrar {
+    position: relative;
+    overflow: hidden;
     width: 100%;
     background: var(--fg);
     border: none;
@@ -263,6 +451,51 @@ const products = [
     border-radius: var(--radius-pill);
     cursor: pointer;
     font-size: 13px;
+    transform: perspective(600px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) scale(var(--cobrar-scale, 1));
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s var(--ease-out);
+  }
+  .mini-cobrar:hover {
+    --cobrar-scale: 1.03;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), 0 0 30px rgba(124, 92, 255, 0.22);
+  }
+  .mini-cobrar:active {
+    --cobrar-scale: 0.97;
+  }
+  .mini-cobrar-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: multiply;
+    background: radial-gradient(circle 120px at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0) 70%);
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .mini-cobrar:hover .mini-cobrar-glare {
+    opacity: 1;
+  }
+
+  .mini-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 32px;
+    z-index: 200;
+    transform: translate(-50%, 12px);
+    background: #0d0a14;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--fg);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: var(--radius-pill);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+  }
+  .mini-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 
   /* Modal a nivel de página: fixed (no absolute) para escapar de .mini-demo y

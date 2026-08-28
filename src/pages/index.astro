@@ -12,8 +12,8 @@ import { sections } from '../lib/sections';
 <Layout>
   <SiteNav />
   <main>
-    {sections.map((section) => (
-      <Section section={section}>
+    {sections.map((section, i) => (
+      <Section section={section} headingLevel={i === 0 ? 'h1' : 'h2'}>
         {section.id === 'punto-venta' && <MiniDemo slot="demo" />}
       </Section>
     ))}

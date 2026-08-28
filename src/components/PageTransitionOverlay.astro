@@ -1,0 +1,31 @@
+---
+---
+
+<div id="pageTransitionOverlay" class="page-transition-overlay" aria-hidden="true"></div>
+
+<style>
+  /* Overlay a pantalla completa que dibuja el wipe elástico entre páginas
+     (ver docs/specs/2026-08-28-aura-landing-page-transitions.md). La forma es
+     una "cápsula" (`clip-path: inset(... round 9999px)`, el radio grande
+     fuerza puntas semicirculares) cuyos dos bordes se animan por separado
+     desde pageTransition.ts vía onUpdate — no hay transición CSS acá, el
+     estado de reposo/pendiente son solo los dos puntos de partida. */
+  .page-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: var(--page-transition-color, var(--accent-violet));
+    /* Reposo: ventana de ancho cero estacionada fuera de pantalla por la
+       izquierda (leadX = trailX = -20% en la nomenclatura del spec). */
+    clip-path: inset(0 120% 0 -20% round 9999px);
+    pointer-events: none;
+  }
+
+  /* Fijado por el script inline de Layout.astro antes del primer paint
+     cuando hay una transición pendiente en sessionStorage — dejar la página
+     nueva ya "cubierta" (leadX = 120%, trailX = -20%) evita el flash mientras
+     pageTransition.ts arranca la fase de revelado. */
+  :global(html.page-transition-pending) .page-transition-overlay {
+    clip-path: inset(0 -20% 0 -20% round 9999px);
+  }
+</style>
