@@ -32,10 +32,10 @@ import Layout from '../layouts/Layout.astro';
     <section class="legal-section">
       <h2>1. Responsable del tratamiento y roles</h2>
       <p>El Responsable del Tratamiento de los datos personales recolectados a través de este sitio web y de la plataforma AURA es:</p>
-      <p class="legal-todo">
-        [Razón social de AURA]<br />
-        NIT: [NIT]<br />
-        Dirección: [Dirección], Medellín, Colombia
+      <p>
+        <strong>Somos Aura</strong><br />
+        NIT: <span class="legal-todo-inline">[NIT]</span><br />
+        Dirección: <span class="legal-todo-inline">[Dirección]</span>, Medellín, Colombia
       </p>
       <p>Contacto: <strong>soporte@somosaura.dev</strong>, o por WhatsApp desde el botón disponible en el sitio.</p>
       <p>AURA actúa en dos roles distintos frente a los datos personales:</p>
@@ -219,8 +219,8 @@ import Layout from '../layouts/Layout.astro';
     </section>
 
     <p class="legal-todo legal-todo-final">
-      Documento borrador — completar los campos entre corchetes (razón social, NIT y dirección) y someterlo a
-      revisión legal antes de considerarlo definitivo.
+      Documento borrador — falta completar el NIT y la dirección física (sección 1) y someterlo a revisión
+      legal antes de considerarlo definitivo.
     </p>
   </main>
 </Layout>
@@ -305,6 +305,13 @@ import Layout from '../layouts/Layout.astro';
   }
   .legal-todo-final {
     margin-top: 40px;
+  }
+  .legal-todo-inline {
+    font-style: italic;
+    color: #ffb26b;
+    background: rgba(255, 178, 107, 0.12);
+    border-radius: 4px;
+    padding: 1px 5px;
   }
   .table-scroll {
     overflow-x: auto;
