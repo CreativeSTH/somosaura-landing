@@ -22,10 +22,7 @@ const svg = await QRCode.toString(whatsappHref, {
   <span class="qr-badge-glare"></span>
 </button>
 
-<div class="qr-caption" id="qrCaption">
-  <p>Escaneá para hablar por WhatsApp</p>
-  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">o abrí el chat directo →</a>
-</div>
+<a class="qr-caption" id="qrCaption" href={whatsappHref} target="_blank" rel="noopener noreferrer">WhatsApp</a>
 
 <script>
   const badge = document.getElementById('qrBadge')!;
@@ -61,6 +58,26 @@ const svg = await QRCode.toString(whatsappHref, {
     badge.style.setProperty('--tilt-rx', '0deg');
     badge.style.setProperty('--tilt-ry', '0deg');
   });
+
+  // Se esconde solo (con salida animada) apenas el footer asoma en pantalla
+  // — ahí es donde vive el wordmark "aura", en la misma esquina — y vuelve a
+  // aparecer si el usuario sube de nuevo. Si estaba abierto, lo cerramos
+  // antes de esconderlo para no dejarlo "congelado" a mitad de animación.
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const hide = entry.isIntersecting;
+          if (hide) setOpen(false);
+          badge.classList.toggle('is-hidden', hide);
+          scrim.classList.toggle('is-hidden', hide);
+          caption.classList.toggle('is-hidden', hide);
+        }
+      },
+      { threshold: 0 }
+    ).observe(footer);
+  }
 </script>
 
 <style>
@@ -97,12 +114,14 @@ const svg = await QRCode.toString(whatsappHref, {
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 1;
     transform: perspective(1000px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) scale(var(--qr-scale, 1));
     transition:
       width 0.45s cubic-bezier(0.25, 1, 0.5, 1),
       height 0.45s cubic-bezier(0.25, 1, 0.5, 1),
       border-radius 0.45s cubic-bezier(0.25, 1, 0.5, 1),
       transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s var(--ease-out),
       box-shadow 0.3s var(--ease-out);
   }
   .qr-badge:hover {
@@ -114,6 +133,17 @@ const svg = await QRCode.toString(whatsappHref, {
     --qr-radius: 32px;
     left: 32px;
     bottom: 32px;
+    /* Gira la card entera (no el QR adentro) — el código se queda recto y
+       legible, el efecto "pegatina" lo da el marco completo. */
+    transform: perspective(1000px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) rotate(-6deg) scale(var(--qr-scale, 1));
+  }
+  /* Salida cuando el footer asoma en pantalla (ver IntersectionObserver del
+     script): se hunde, gira y encoge en vez de solo desvanecerse — más
+     "chevere" que un fade plano, y coherente con el tilt 3D que ya tiene. */
+  .qr-badge.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: perspective(1000px) translateY(28px) rotate(-16deg) scale(0.4);
   }
   .qr-badge-clip {
     position: absolute;
@@ -123,6 +153,22 @@ const svg = await QRCode.toString(whatsappHref, {
     border-radius: 0;
     overflow: hidden;
     display: flex;
+    transition: inset 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .qr-badge.is-open .qr-badge-clip {
+    /* Más aire alrededor del código una vez expandido — a los 60px chicos el
+       inset de 10px ya se ve ajustado, pero a los 200px se ve apretado. */
+    inset: 34px;
+  }
+  .qr-badge-code {
+    /* El SVG del QR no trae width/height propios (solo viewBox cuadrado) —
+       sin esto, .qr-badge-code (ítem flex) tomaba un ancho "shrink-to-fit"
+       por defecto de ~300px mientras el alto se estiraba a 132px, y el SVG
+       al 100%/100% de ese contenedor no cuadrado salía deformado. Fijar acá
+       el 100%/100% le da un tamaño definido y cuadrado antes de llegar al SVG. */
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   .qr-badge-code :global(svg) {
     display: block;
@@ -143,35 +189,40 @@ const svg = await QRCode.toString(whatsappHref, {
     opacity: 1;
   }
 
+  /* Arriba de la card, centrado — mismas coordenadas que la tarjeta abierta
+     (left: 32px + mitad de --qr-size: 200px, bottom: 32px + 200px + 14px de
+     aire). Solo tiene sentido visible cuando .is-open, así que no hace falta
+     animar su posición, solo el fade. */
   .qr-caption {
     position: fixed;
-    left: 92px;
-    bottom: 34px;
+    left: 132px;
+    bottom: 246px;
+    transform: translateX(-50%);
     z-index: 50;
-    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--fg-muted);
+    text-decoration: none;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s var(--ease-out) 0.15s, left 0.45s cubic-bezier(0.25, 1, 0.5, 1), bottom 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: opacity 0.3s var(--ease-out) 0.15s, color 0.2s var(--ease-out);
   }
   .qr-caption.is-open {
-    left: 248px;
-    bottom: 40px;
     opacity: 1;
     pointer-events: auto;
   }
-  .qr-caption p {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 600;
+  .qr-caption:hover {
     color: var(--fg);
   }
-  .qr-caption a {
-    font-size: 11px;
-    color: var(--fg-muted);
-    text-decoration: none;
+  .qr-caption.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-out);
   }
-  .qr-caption a:hover {
-    color: var(--accent-violet);
+  .qr-scrim.is-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 
   @media (max-width: 900px) {
