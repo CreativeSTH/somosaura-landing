@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CTAButton from '../components/CTAButton.astro';
+---
+
+<Layout title="Página no encontrada — AURA" description="La página que buscás no existe o se movió de lugar.">
+  <main class="not-found">
+    <p class="not-found-number" aria-hidden="true">
+      4<span class="not-found-dot"></span>4
+    </p>
+    <p class="not-found-eyebrow">Error 404</p>
+    <h1 class="not-found-title">Esta página se perdió en el camino.</h1>
+    <p class="not-found-copy">La página que buscás no existe o se movió de lugar. Volvamos a algo que sí está.</p>
+    <CTAButton href="/">Volver al inicio</CTAButton>
+  </main>
+</Layout>
+
+<style>
+  .not-found {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 24px 60px;
+  }
+  .not-found-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: clamp(72px, 18vw, 140px);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--fg);
+    margin: 0 0 8px;
+  }
+  .not-found-dot {
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: var(--accent-violet-glow);
+    box-shadow: 0 0 24px var(--accent-violet-glow), 0 0 56px rgba(124, 92, 255, 0.65), 0 0 100px rgba(124, 92, 255, 0.35);
+  }
+  .not-found-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: var(--accent-violet);
+    margin: 0 0 16px;
+  }
+  .not-found-title {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    max-width: 440px;
+  }
+  .not-found-copy {
+    font-size: 15px;
+    color: var(--fg-muted);
+    max-width: 400px;
+    margin: 0 0 28px;
+  }
+</style>
