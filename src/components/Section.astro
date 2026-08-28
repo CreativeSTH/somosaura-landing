@@ -1,0 +1,93 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import FeatureCardCluster from './FeatureCardCluster.astro';
+import type { SectionDef } from '../lib/sections';
+
+interface Props {
+  section: SectionDef;
+  /** Invierte el orden en desktop (visual | texto en vez de texto | visual) — para páginas de varias secciones cortas que quieran alternar el lado, tipo "diseño intercalado". El home no lo usa, todas sus secciones quedan igual que antes. */
+  reverse?: boolean;
+}
+
+const { section, reverse = false } = Astro.props;
+
+const accentVars: Record<string, string> = {
+  violet: '--accent-violet',
+  teal: '--accent-teal',
+  pink: '--accent-pink',
+  blue: '--accent-blue',
+  orange: '--accent-orange',
+  amber: '--accent-amber',
+};
+const glowVars: Record<string, string> = {
+  violet: '--accent-violet-glow',
+  teal: '--accent-teal-glow',
+  pink: '--accent-pink-glow',
+  blue: '--accent-blue-glow',
+  orange: '--accent-orange-glow',
+  amber: '--accent-amber-glow',
+};
+---
+
+<section
+  id={section.id}
+  data-section-id={section.id}
+  class:list={['section', { 'section-reverse': reverse }]}
+  style={`--section-accent: var(${accentVars[section.accent]}); --section-accent-glow: var(${glowVars[section.accent]});`}
+>
+  <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
+  <div class="section-visual" data-visual-kind={section.visual}>
+    {section.visual === 'cards' && section.cards && (
+      <FeatureCardCluster cards={section.cards} dimmed={section.dimmedCards} />
+    )}
+    {section.visual === 'demo' && <slot name="demo" />}
+  </div>
+</section>
+
+<style>
+  .section {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    padding: 60px 24px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .section {
+      min-height: auto;
+      padding: 48px 20px;
+      text-align: center;
+      align-items: center;
+    }
+  }
+
+  /* Desktop: dos columnas (texto | captura grande), con suficiente padding
+     derecho para que el contenido nunca quede debajo del nav lateral fijo
+     (SiteNav, position: fixed; right: 40px). */
+  @media (min-width: 900px) {
+    .section {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 56px;
+      max-width: 1180px;
+      padding: 80px 240px 80px 60px;
+    }
+    .section :global(.section-header) {
+      flex: 0 0 380px;
+      max-width: 380px;
+    }
+    .section-visual {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+    .section-reverse {
+      flex-direction: row-reverse;
+    }
+  }
+</style>

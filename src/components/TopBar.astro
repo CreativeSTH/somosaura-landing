@@ -1,0 +1,424 @@
+---
+import Icon from './Icon.astro';
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const appUrl = import.meta.env.PUBLIC_APP_URL;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+const menuLinks = [
+  { label: 'Inicio', href: '/' },
+  { label: '¿Qué es Aura?', href: '/que-es-aura' },
+  { label: 'Conoce Aura a Fondo', href: '/nuestro-software' },
+  { label: 'Planes', href: '/planes' },
+  { label: 'Privacidad', href: '/politica-de-privacidad' },
+];
+---
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <button
+      type="button"
+      class="topbar-toggle"
+      id="topbarToggle"
+      aria-expanded="false"
+      aria-controls="topbarMenu"
+      aria-label="Abrir menú"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <a class="topbar-logo" href="/#inicio" aria-label="AURA — Inicio">
+      <span class="topbar-logo-dot"></span>
+      aura
+    </a>
+
+    <div class="topbar-actions">
+      <a class="topbar-cta" id="topbarCta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+        Prueba gratis
+        <span class="topbar-cta-glare"></span>
+      </a>
+      <a class="topbar-enter" href={appUrl}>Entrar</a>
+    </div>
+  </div>
+
+  <nav class="topbar-menu" id="topbarMenu">
+    <button type="button" class="topbar-menu-close" id="topbarMenuClose" aria-label="Cerrar menú">
+      <Icon name="x" size={18} />
+    </button>
+    <div class="topbar-menu-links">
+      {menuLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+      <div class="topbar-menu-actions">
+        <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">Prueba gratis</a>
+        <a class="topbar-enter" href={appUrl}>Entrar</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById('topbarToggle');
+  const menu = document.getElementById('topbarMenu');
+  const closeBtn = document.getElementById('topbarMenuClose');
+
+  // Igual que el modal de cobro: `.topbar` tiene su propio backdrop-filter,
+  // que crea un containing block y atrapa el `position: fixed` del menú
+  // dentro de la altura del header en vez de toda la pantalla. Lo sacamos
+  // de ahí para que el clip-path cubra la pantalla real.
+  if (menu) document.body.appendChild(menu);
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = menu?.classList.toggle('open') ?? false;
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // El toggle original queda tapado por el menú una vez abierto (el menú
+  // ahora se superpone al topbar) — este botón vive adentro del panel para
+  // poder cerrarlo sin tener que clickear un link.
+  closeBtn?.addEventListener('click', () => {
+    menu?.classList.remove('open');
+    toggle?.setAttribute('aria-expanded', 'false');
+  });
+
+  menu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      menu.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Mismo tilt 3D + glare que sigue al mouse que usa el QR.
+  const cta = document.getElementById('topbarCta');
+  cta?.addEventListener('mousemove', (e) => {
+    const rect = cta.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 12;
+    const ry = (x - 0.5) * 12;
+    cta.style.setProperty('--tilt-rx', `${rx}deg`);
+    cta.style.setProperty('--tilt-ry', `${ry}deg`);
+    cta.style.setProperty('--tilt-gx', `${x * 100}%`);
+    cta.style.setProperty('--tilt-gy', `${y * 100}%`);
+  });
+  cta?.addEventListener('mouseleave', () => {
+    cta.style.setProperty('--tilt-rx', '0deg');
+    cta.style.setProperty('--tilt-ry', '0deg');
+  });
+</script>
+
+<style>
+  /* Mobile-first: esto de acá es el layout base, igual a todos los anchos —
+     hamburguesa | logo centrado | acciones, sin bordes en ningún lado. */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: rgba(8, 6, 12, 0.75);
+    backdrop-filter: blur(10px);
+  }
+  /* Centro del clip-path circular del menú — coincide con el centro de la
+     hamburguesa. En :root (no en .topbar) porque el menú se reubica como
+     hijo directo de <body> por JS (ver script arriba) y necesita heredarlas
+     igual desde ahí. */
+  :global(:root) {
+    --menu-origin-x: 39px;
+    --menu-origin-y: 32px;
+  }
+  .topbar-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 12px 20px;
+    min-height: var(--topbar-height);
+  }
+
+  .topbar-toggle {
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 38px;
+    height: 38px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .topbar-toggle span {
+    display: block;
+    width: 14px;
+    height: 2px;
+    background: var(--fg);
+    border-radius: 2px;
+  }
+
+  .topbar-logo {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 19px;
+    color: var(--fg);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+  .topbar-logo-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-violet-glow);
+    box-shadow: 0 0 10px var(--accent-violet-glow), 0 0 24px rgba(124, 92, 255, 0.65), 0 0 44px rgba(124, 92, 255, 0.35);
+  }
+
+  .topbar-actions {
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    /* En mobile viven solo adentro del menú (topbar-menu-actions) — se
+       ocultan con visibility (no display) para que el grid del logo centrado
+       no se mueva al no tener nada en esta columna. */
+    visibility: hidden;
+  }
+  .topbar-cta {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transform: perspective(600px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg));
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s var(--ease-out), background 0.15s var(--ease-out);
+  }
+  .topbar-cta:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), 0 0 30px rgba(124, 92, 255, 0.18);
+  }
+  .topbar-cta-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle 70px at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%);
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-cta:hover .topbar-cta-glare {
+    opacity: 1;
+  }
+  .topbar-enter {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .topbar-enter:hover {
+    color: var(--fg);
+  }
+
+  /* Menú de la hamburguesa: no es un panel que se desliza — es un círculo que
+     crece desde el centro de la hamburguesa (clip-path), con estilo vidrio
+     igual que las tarjetas de producto.
+     Mobile-first: acá ocupa TODA la pantalla (position: fixed; inset: 0) y el
+     radio final usa vmax para cubrir cualquier tamaño de pantalla sin importar
+     la orientación. El blur solo se activa DESPUÉS de que termina de crecer
+     (transition-delay igual a la duración del clip-path) — animar blur y
+     clip-path a la vez es lo que causaba el lag que se sintió antes; así el
+     blur "aparece" una sola vez, ya con el círculo quieto. En desktop
+     (media query más abajo) vuelve a ser el círculo chico en la esquina, sin
+     blur, como ya estaba. */
+  .topbar-menu {
+    position: fixed;
+    inset: 0;
+    /* .topbar-menu ahora es hijo directo de <body> (ver script), así que
+       este z-index compite en el stacking context raíz — va POR ENCIMA de
+       .topbar (20) para que el panel se superponga a la barra entera. El
+       toggle original queda tapado mientras está abierto; por eso el panel
+       trae su propio botón de cerrar (topbar-menu-close). */
+    z-index: 21;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle 200px at var(--menu-origin-x) var(--menu-origin-y), #13151a, transparent 70%),
+      rgba(8, 6, 12, 0.85);
+    clip-path: circle(0px at var(--menu-origin-x) var(--menu-origin-y));
+    backdrop-filter: blur(0px);
+    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1), backdrop-filter 0s linear 0.5s;
+    pointer-events: none;
+  }
+  .topbar-menu.open {
+    clip-path: circle(150vmax at var(--menu-origin-x) var(--menu-origin-y));
+    backdrop-filter: blur(24px);
+    transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: auto;
+  }
+  .topbar-menu-close {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: none;
+    border: none;
+    color: var(--fg);
+    cursor: pointer;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-menu.open .topbar-menu-close {
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+  .topbar-menu-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    padding: 0 24px;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .topbar-menu.open .topbar-menu-links {
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+  .topbar-menu a {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 0;
+  }
+  .topbar-menu a:hover {
+    color: var(--fg);
+  }
+  /* Solo en mobile: el CTA y "Entrar" se repiten adentro del panel expandido,
+     más grandes y fáciles de tocar. En desktop siguen únicamente en la barra. */
+  .topbar-menu-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .topbar-menu-actions .topbar-cta {
+    font-size: 15px;
+    padding: 12px 24px;
+  }
+  .topbar-menu-actions .topbar-enter {
+    font-size: 13px;
+  }
+
+  @media (min-width: 900px) {
+    /* Misma proporción que el topbar de rainbow.me en desktop: todo más grande
+       (ícono ~50px, botón 146x48 con texto 16px, caption 16px debajo). */
+    .topbar-inner {
+      padding: 22px 40px;
+    }
+    .topbar-toggle {
+      width: 44px;
+      height: 44px;
+    }
+    .topbar-toggle span {
+      width: 16px;
+    }
+    .topbar-logo {
+      gap: 14px;
+      font-size: 26px;
+    }
+    .topbar-logo-dot {
+      width: 26px;
+      height: 26px;
+      box-shadow: 0 0 14px var(--accent-violet-glow), 0 0 34px rgba(124, 92, 255, 0.65), 0 0 60px rgba(124, 92, 255, 0.35);
+    }
+    .topbar-cta {
+      font-size: 16px;
+      padding: 14px 32px;
+    }
+    .topbar-enter {
+      font-size: 14px;
+    }
+    .topbar-actions {
+      visibility: visible;
+    }
+    .topbar-menu-close {
+      top: 21px;
+      left: 43px;
+    }
+    :global(:root) {
+      --menu-origin-x: 62px;
+      --menu-origin-y: 59px;
+    }
+    /* En desktop vuelve a ser el círculo chico en la esquina, sin ocupar toda
+       la pantalla ni blur — eso es solo para mobile. Sigue en `fixed` (no
+       `absolute`) porque el menú vive como hijo directo de <body> (ver
+       script arriba): con `absolute` su containing block pasa a ser el
+       documento entero, así que quedaba anclado al top de la PÁGINA y
+       desaparecía de la vista al scrollear — `fixed` lo ancla al viewport,
+       igual que el propio .topbar, así que queda siempre pegado a él. */
+    .topbar-menu {
+      position: fixed;
+      inset: auto;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle 450px at var(--menu-origin-x) var(--menu-origin-y), #13151a, transparent 70%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: none;
+      transition: clip-path 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .topbar-menu.open {
+      clip-path: circle(300px at var(--menu-origin-x) var(--menu-origin-y));
+      backdrop-filter: none;
+    }
+    /* En desktop vuelve al layout original: anclado arriba a la izquierda,
+       alineado a la izquierda — el centrado es solo para el mobile a pantalla completa. */
+    .topbar-menu-links {
+      position: absolute;
+      top: 74px;
+      left: 24px;
+      right: 24px;
+      align-items: flex-start;
+      text-align: left;
+      padding: 0;
+    }
+    .topbar-menu-actions {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topbar-menu,
+    .topbar-menu-links,
+    .topbar-cta {
+      transition: none;
+    }
+  }
+</style>

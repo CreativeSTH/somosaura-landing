@@ -1,0 +1,41 @@
+:root {
+  --bg: #08060c;
+  --fg: #f7f4ff;
+  --fg-muted: rgba(226, 218, 245, 0.68);
+  --fg-faint: rgba(226, 218, 245, 0.4);
+
+  --accent-violet: #b48cff;
+  --accent-violet-glow: #7c5cff;
+  --accent-teal: #6be0c8;
+  --accent-teal-glow: #2fd6ae;
+  --accent-pink: #ff9ecf;
+  --accent-pink-glow: #ff5fa8;
+  --accent-blue: #7fb8ff;
+  --accent-blue-glow: #3d8bff;
+  --accent-orange: #ffb26b;
+  --accent-orange-glow: #ff8a3d;
+  --accent-amber: #ffd479;
+  --accent-amber-glow: #ffb100;
+
+  /* Stops del shader de aurora del footer (Footer.astro) — mismos 4 colores
+     que --accent-violet/pink/orange/teal-glow de arriba, duplicados acá en
+     hex plano porque el shader los lee vía getComputedStyle en runtime. */
+  --aura-stop-1: #7c5cff;
+  --aura-stop-2: #ff5fa8;
+  --aura-stop-3: #ff8a3d;
+  --aura-stop-4: #2fd6ae;
+
+  --font-sans: 'M PLUS U', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --topbar-height: 64px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (min-width: 900px) {
+  :root {
+    /* El topbar mide más en desktop (logo/botón más grandes) — ver TopBar.astro. */
+    --topbar-height: 118px;
+  }
+}

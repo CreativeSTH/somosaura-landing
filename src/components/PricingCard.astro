@@ -1,0 +1,141 @@
+---
+import Icon from './Icon.astro';
+import CTAButton from './CTAButton.astro';
+import { formatCOP } from '../lib/formatCurrency';
+import type { PricingPlan } from '../lib/pricingPlans';
+
+interface Props {
+  plan: PricingPlan;
+  ctaHref: string;
+}
+
+const { plan, ctaHref } = Astro.props;
+---
+
+<div class:list={['pricing-card', { 'pricing-card-highlight': plan.highlight }]}>
+  {plan.highlight && <span class="pricing-badge">Recomendado</span>}
+
+  <h3 class="pricing-name">{plan.name}</h3>
+  <p class="pricing-price">
+    <span class="pricing-price-amount">{formatCOP(plan.price)}</span>
+    <span class="pricing-price-period">/mes</span>
+  </p>
+  <p class="pricing-audience">{plan.audience}</p>
+
+  <ul class="pricing-features">
+    {plan.features.map((feature) => (
+      <li>
+        <Icon name="check-circle" size={16} />
+        <span>{feature}</span>
+      </li>
+    ))}
+    {plan.excluded?.map((feature) => (
+      <li class="pricing-feature-excluded">
+        <Icon name="x" size={16} />
+        <span>{feature}</span>
+      </li>
+    ))}
+  </ul>
+
+  {plan.note && <p class="pricing-note">{plan.note}</p>}
+
+  <CTAButton href={ctaHref} variant={plan.highlight ? 'primary' : 'ghost'}>Elegir {plan.name}</CTAButton>
+</div>
+
+<style>
+  .pricing-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 28px 24px 26px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+  }
+  .pricing-card-highlight {
+    border-color: var(--accent-violet);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.4), 0 0 40px rgba(124, 92, 255, 0.22);
+  }
+  .pricing-badge {
+    position: absolute;
+    top: -13px;
+    left: 24px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-violet);
+    color: #0a0612;
+  }
+  .pricing-name {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 4px 0 12px;
+  }
+  .pricing-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0 0 12px;
+  }
+  .pricing-price-amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--fg);
+  }
+  .pricing-price-period {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+  .pricing-audience {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0 0 20px;
+    min-height: 40px;
+  }
+  .pricing-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+  .pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--fg);
+  }
+  .pricing-features li :global(svg) {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--accent-violet);
+  }
+  .pricing-features li.pricing-feature-excluded {
+    color: var(--fg-faint);
+  }
+  .pricing-features li.pricing-feature-excluded :global(svg) {
+    color: var(--fg-faint);
+  }
+  .pricing-note {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--fg-faint);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 0 0 20px;
+  }
+  .pricing-card :global(.cta-button) {
+    margin-top: auto;
+    text-align: center;
+  }
+</style>

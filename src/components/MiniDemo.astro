@@ -1,0 +1,454 @@
+---
+import Icon from './Icon.astro';
+
+const products = [
+  { name: 'Gaseosa', price: 8500, icon: 'cup-soda' },
+  { name: 'Pan', price: 4200, icon: 'wheat' },
+  { name: 'Combo', price: 15000, icon: 'package' },
+];
+---
+
+<div class="mini-demo" id="miniDemo">
+  <p class="mini-demo-title">Probalo — creá una venta real</p>
+  <div class="mini-products">
+    {products.map((p) => (
+      <button type="button" class="mini-product" data-price={p.price}>
+        <span class="mini-product-icon"><Icon name={p.icon} size={20} /></span>
+        <span class="mini-product-name">{p.name}</span>
+        <span class="mini-product-price">${p.price.toLocaleString('es-CO')}</span>
+      </button>
+    ))}
+  </div>
+  <div class="mini-cart-row">
+    <span id="miniCartCount">0 items</span>
+    <span id="miniCartTotal">$0</span>
+  </div>
+  <button type="button" class="mini-cobrar" id="miniCobrarBtn">Cobrar</button>
+</div>
+
+<!-- Modal de cobro — a nivel de página, no dentro de la tarjeta chica: bloquea y difumina el resto del sitio mientras está abierto. -->
+<div class="mini-modal-backdrop" id="miniModalBackdrop">
+  <!-- Panel 1: método fijo, cuánto recibe y cuánto devuelve -->
+  <div class="mini-modal-panel mini-pay-panel" id="miniPayPanel">
+    <p class="mini-dialog-eyebrow">Total a cobrar</p>
+    <p class="mini-dialog-total" id="miniPayTotal">$0</p>
+
+    <div class="mini-dialog-method-row">
+      <span>Método de pago</span>
+      <span class="mini-dialog-method-value">
+        <Icon name="lock" size={11} />
+        Efectivo
+      </span>
+    </div>
+
+    <label class="mini-dialog-label" for="miniPayReceived">Recibe</label>
+    <input type="number" inputmode="numeric" class="mini-dialog-input" id="miniPayReceived" placeholder="$0" />
+
+    <div class="mini-dialog-change-row">
+      <span>Devuelta</span>
+      <span id="miniPayChange">$0</span>
+    </div>
+
+    <div class="mini-dialog-actions">
+      <button type="button" class="mini-dialog-cancel" id="miniPayCancel">Cancelar</button>
+      <button type="button" class="mini-dialog-confirm" id="miniPayConfirm">Pagar</button>
+    </div>
+  </div>
+
+  <!-- Panel 2: imprimiendo factura -->
+  <div class="mini-modal-panel mini-print-panel" id="miniPrintPanel">
+    <span class="mini-spinner"></span>
+    <p>Imprimiendo factura…</p>
+  </div>
+
+  <!-- Panel 3: alerta final -->
+  <div class="mini-modal-panel mini-alert-panel" id="miniAlertPanel">
+    <span class="mini-alert-icon"><Icon name="check-circle" size={30} /></span>
+    <p class="mini-alert-title">Venta finalizada</p>
+    <p class="mini-alert-sub">2 clicks, cero pantallas nuevas.</p>
+  </div>
+</div>
+
+<script>
+  import { formatCOP } from '../lib/formatCurrency';
+  import { createCart } from '../lib/miniDemoCart';
+  import { computeChange, suggestReceived } from '../lib/payment';
+
+  const root = document.getElementById('miniDemo');
+  if (root) {
+    const cart = createCart();
+    const countEl = document.getElementById('miniCartCount')!;
+    const totalEl = document.getElementById('miniCartTotal')!;
+
+    const backdrop = document.getElementById('miniModalBackdrop')!;
+    // Reubicado como hijo directo de <body>: un ancestro con `filter` (el
+    // sistema de reveal de motion.ts anima `.section-visual` con filter/blur)
+    // crea su propio containing block y rompe `position: fixed` si el modal
+    // se queda anidado ahí adentro.
+    document.body.appendChild(backdrop);
+
+    const payPanel = document.getElementById('miniPayPanel')!;
+    const printPanel = document.getElementById('miniPrintPanel')!;
+    const alertPanel = document.getElementById('miniAlertPanel')!;
+    const panels = [payPanel, printPanel, alertPanel];
+
+    const payTotalEl = document.getElementById('miniPayTotal')!;
+    const receivedInput = document.getElementById('miniPayReceived') as HTMLInputElement;
+    const changeEl = document.getElementById('miniPayChange')!;
+    const confirmBtn = document.getElementById('miniPayConfirm') as HTMLButtonElement;
+
+    function showPanel(panel: HTMLElement | null) {
+      panels.forEach((p) => p.classList.toggle('show', p === panel));
+    }
+
+    function openModal() {
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+      showPanel(null);
+    }
+
+    function render() {
+      countEl.textContent = `${cart.items.length} items`;
+      totalEl.textContent = formatCOP(cart.total());
+    }
+
+    function updateChange() {
+      const total = cart.total();
+      const received = Number(receivedInput.value) || 0;
+      const change = computeChange(total, received);
+      changeEl.textContent = formatCOP(change);
+      confirmBtn.disabled = received < total;
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('.mini-product').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        btn.classList.add('added');
+        cart.add(Number(btn.dataset.price));
+        render();
+      });
+    });
+
+    document.getElementById('miniCobrarBtn')?.addEventListener('click', () => {
+      if (cart.items.length === 0) return;
+      const total = cart.total();
+      payTotalEl.textContent = formatCOP(total);
+      receivedInput.value = String(suggestReceived(total));
+      updateChange();
+      openModal();
+      showPanel(payPanel);
+    });
+
+    receivedInput.addEventListener('input', updateChange);
+
+    document.getElementById('miniPayCancel')?.addEventListener('click', () => {
+      closeModal();
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      showPanel(printPanel);
+
+      setTimeout(() => {
+        showPanel(alertPanel);
+
+        setTimeout(() => {
+          closeModal();
+          cart.clear();
+          root.querySelectorAll('.mini-product.added').forEach((el) => el.classList.remove('added'));
+          render();
+        }, 1800);
+      }, 1600);
+    });
+  }
+</script>
+
+<style>
+  .mini-demo {
+    position: relative;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  @media (min-width: 900px) {
+    .mini-demo {
+      max-width: 400px;
+      padding: 24px;
+    }
+  }
+  .mini-demo-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-violet);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+  .mini-products {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 6px 2px;
+  }
+  .mini-product {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 12px 6px 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--fg);
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s var(--ease-out), border-color 0.15s;
+  }
+  .mini-product-icon {
+    display: flex;
+    color: var(--accent-violet);
+    margin-bottom: 4px;
+  }
+  .mini-product-name {
+    color: var(--fg-muted);
+  }
+  .mini-product-price {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent-violet);
+    margin-top: 2px;
+  }
+  /* Desordenadas a propósito, como un mazo de tarjetas tirado sobre la mesa. */
+  .mini-products > .mini-product:nth-child(1) {
+    transform: rotate(-5deg) translateY(4px);
+  }
+  .mini-products > .mini-product:nth-child(2) {
+    transform: rotate(4deg) translateY(-6px);
+  }
+  .mini-products > .mini-product:nth-child(3) {
+    transform: rotate(-3deg) translateY(5px);
+  }
+  .mini-product:hover {
+    transform: translateY(-4px) scale(1.05) rotate(0deg);
+    border-color: var(--accent-violet);
+  }
+  .mini-product.added {
+    border-color: var(--accent-violet);
+    background: rgba(150, 110, 255, 0.18);
+  }
+  .mini-cart-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin-bottom: 12px;
+  }
+  .mini-cobrar {
+    width: 100%;
+    background: var(--fg);
+    border: none;
+    color: #0a0612;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  /* Modal a nivel de página: fixed (no absolute) para escapar de .mini-demo y
+     cubrir/bloquear todo el sitio, con blur del contenido de atrás. */
+  .mini-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(4, 3, 8, 0.6);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-out);
+  }
+  .mini-modal-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mini-modal-panel {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 340px;
+    background: #0d0a14;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 26px 24px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+  }
+  .mini-modal-panel.show {
+    display: flex;
+  }
+
+  .mini-dialog-method-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--fg-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 16px;
+  }
+  .mini-dialog-method-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--fg);
+    font-weight: 700;
+  }
+
+  .mini-dialog-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-muted);
+    margin: 0 0 4px;
+  }
+  .mini-dialog-total {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 18px;
+  }
+  .mini-dialog-label {
+    align-self: flex-start;
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin-bottom: 6px;
+  }
+  .mini-dialog-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--fg);
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .mini-dialog-input:focus {
+    outline: none;
+    border-color: var(--accent-violet);
+  }
+  .mini-dialog-change-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--fg-muted);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 12px;
+    margin-bottom: 18px;
+  }
+  .mini-dialog-change-row span:last-child {
+    color: #8ff0ac;
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .mini-dialog-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+  .mini-dialog-cancel {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--fg);
+    font-weight: 600;
+    padding: 11px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .mini-dialog-confirm {
+    flex: 1;
+    background: var(--accent-violet);
+    border: none;
+    color: #0a0612;
+    font-weight: 700;
+    padding: 11px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .mini-dialog-confirm:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .mini-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: var(--accent-violet);
+    border-radius: 50%;
+    animation: miniSpin 0.8s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes miniSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .mini-print-panel p {
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  .mini-alert-icon {
+    display: flex;
+    color: #8ff0ac;
+    margin-bottom: 10px;
+  }
+  .mini-alert-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  .mini-alert-sub {
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mini-spinner {
+      animation-duration: 1.6s;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .mini-products {
+      flex-direction: column;
+    }
+  }
+</style>

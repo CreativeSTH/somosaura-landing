@@ -1,0 +1,68 @@
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+main {
+  padding-top: var(--topbar-height);
+}
+
+button {
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Fallback sin JavaScript: si document.documentElement nunca recibe la clase
+   "js" (ver Layout.astro), estos elementos quedan visibles siempre — el
+   contenido debe poder leerse aunque el JS falle o esté deshabilitado. */
+.js-word,
+.section-visual {
+  opacity: 1;
+}
+
+/* Con JS activo, el reposo real de lo que todavía no entró en pantalla es
+   borroso/desplazado — motion.ts anima DESDE este estado hacia el natural
+   cuando la sección entra (revealSection) y vuelve a este estado al salir
+   (hideSection), así cada reingreso tiene algo visible que animar. */
+html.js .js-word {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(18px);
+}
+html.js .section-visual {
+  opacity: 0;
+  filter: blur(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

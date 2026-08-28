@@ -1,0 +1,244 @@
+---
+import QRCode from 'qrcode';
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+// Generado en build time — sin depender de un servicio externo de QR en runtime.
+const svg = await QRCode.toString(whatsappHref, {
+  type: 'svg',
+  margin: 0,
+  color: { dark: '#f7f4ff', light: '#0000' },
+});
+---
+
+<div class="qr-scrim" id="qrScrim"></div>
+
+<button type="button" class="qr-badge" id="qrBadge" aria-expanded="false" aria-label="Mostrar QR para hablar por WhatsApp">
+  <span class="qr-badge-clip">
+    <span class="qr-badge-code" set:html={svg} />
+  </span>
+  <span class="qr-badge-glare"></span>
+</button>
+
+<a class="qr-caption" id="qrCaption" href={whatsappHref} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+
+<script>
+  const badge = document.getElementById('qrBadge')!;
+  const scrim = document.getElementById('qrScrim')!;
+  const caption = document.getElementById('qrCaption')!;
+
+  function setOpen(open: boolean) {
+    badge.classList.toggle('is-open', open);
+    scrim.classList.toggle('is-open', open);
+    caption.classList.toggle('is-open', open);
+    badge.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  badge.addEventListener('click', () => {
+    setOpen(!badge.classList.contains('is-open'));
+  });
+
+  scrim.addEventListener('click', () => setOpen(false));
+
+  badge.addEventListener('mousemove', (e) => {
+    const rect = badge.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 14;
+    const ry = (x - 0.5) * 14;
+    badge.style.setProperty('--tilt-rx', `${rx}deg`);
+    badge.style.setProperty('--tilt-ry', `${ry}deg`);
+    badge.style.setProperty('--tilt-gx', `${x * 100}%`);
+    badge.style.setProperty('--tilt-gy', `${y * 100}%`);
+  });
+
+  badge.addEventListener('mouseleave', () => {
+    badge.style.setProperty('--tilt-rx', '0deg');
+    badge.style.setProperty('--tilt-ry', '0deg');
+  });
+
+  // Se esconde solo (con salida animada) apenas el footer asoma en pantalla
+  // — ahí es donde vive el wordmark "aura", en la misma esquina — y vuelve a
+  // aparecer si el usuario sube de nuevo. Si estaba abierto, lo cerramos
+  // antes de esconderlo para no dejarlo "congelado" a mitad de animación.
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const hide = entry.isIntersecting;
+          if (hide) setOpen(false);
+          badge.classList.toggle('is-hidden', hide);
+          scrim.classList.toggle('is-hidden', hide);
+          caption.classList.toggle('is-hidden', hide);
+        }
+      },
+      { threshold: 0 }
+    ).observe(footer);
+  }
+</script>
+
+<style>
+  .qr-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(4, 3, 8, 0.55);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .qr-scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .qr-badge {
+    --qr-size: 60px;
+    --qr-radius: 14px;
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 50;
+    width: var(--qr-size);
+    height: var(--qr-size);
+    border-radius: var(--qr-radius);
+    background: radial-gradient(circle 90px at 50% 50%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05) 70%);
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.15), 0 0 48px rgba(255, 255, 255, 0.04);
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transform: perspective(1000px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) scale(var(--qr-scale, 1));
+    transition:
+      width 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      height 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      border-radius 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s var(--ease-out),
+      box-shadow 0.3s var(--ease-out);
+  }
+  .qr-badge:hover {
+    --qr-scale: 1.08;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), 0 0 60px rgba(124, 92, 255, 0.18);
+  }
+  .qr-badge.is-open {
+    --qr-size: 200px;
+    --qr-radius: 32px;
+    left: 32px;
+    bottom: 32px;
+    /* Gira la card entera (no el QR adentro) — el código se queda recto y
+       legible, el efecto "pegatina" lo da el marco completo. */
+    transform: perspective(1000px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) rotate(-6deg) scale(var(--qr-scale, 1));
+  }
+  /* Salida cuando el footer asoma en pantalla (ver IntersectionObserver del
+     script): se hunde, gira y encoge en vez de solo desvanecerse — más
+     "chevere" que un fade plano, y coherente con el tilt 3D que ya tiene. */
+  .qr-badge.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: perspective(1000px) translateY(28px) rotate(-16deg) scale(0.4);
+  }
+  .qr-badge-clip {
+    position: absolute;
+    inset: 10px;
+    /* Sin radius acá a propósito — el código QR queda cuadrado, solo la
+       tarjeta que lo contiene (.qr-badge) mantiene las esquinas redondeadas. */
+    border-radius: 0;
+    overflow: hidden;
+    display: flex;
+    transition: inset 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .qr-badge.is-open .qr-badge-clip {
+    /* Más aire alrededor del código una vez expandido — a los 60px chicos el
+       inset de 10px ya se ve ajustado, pero a los 200px se ve apretado. */
+    inset: 34px;
+  }
+  .qr-badge-code {
+    /* El SVG del QR no trae width/height propios (solo viewBox cuadrado) —
+       sin esto, .qr-badge-code (ítem flex) tomaba un ancho "shrink-to-fit"
+       por defecto de ~300px mientras el alto se estiraba a 132px, y el SVG
+       al 100%/100% de ese contenedor no cuadrado salía deformado. Fijar acá
+       el 100%/100% le da un tamaño definido y cuadrado antes de llegar al SVG. */
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .qr-badge-code :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .qr-badge-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle 90px at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 70%);
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .qr-badge:hover .qr-badge-glare {
+    opacity: 1;
+  }
+
+  /* Arriba de la card, centrado — mismas coordenadas que la tarjeta abierta
+     (left: 32px + mitad de --qr-size: 200px, bottom: 32px + 200px + 14px de
+     aire). Solo tiene sentido visible cuando .is-open, así que no hace falta
+     animar su posición, solo el fade. */
+  .qr-caption {
+    position: fixed;
+    left: 132px;
+    bottom: 246px;
+    transform: translateX(-50%);
+    z-index: 50;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--fg-muted);
+    text-decoration: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-out) 0.15s, color 0.2s var(--ease-out);
+  }
+  .qr-caption.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .qr-caption:hover {
+    color: var(--fg);
+  }
+  .qr-caption.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-out);
+  }
+  .qr-scrim.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .qr-badge,
+    .qr-scrim,
+    .qr-caption {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qr-badge,
+    .qr-badge-glare,
+    .qr-scrim,
+    .qr-caption {
+      transition: none;
+    }
+  }
+</style>

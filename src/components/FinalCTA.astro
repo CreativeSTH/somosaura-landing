@@ -1,0 +1,31 @@
+---
+import CTAButton from './CTAButton.astro';
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+---
+
+<section class="final-cta" data-section-id="cta">
+  <h2>Iniciá tu prueba gratis de 20 días.</h2>
+  <p>Sin tarjeta, sin instalar nada todavía — hablamos y lo dejamos listo juntos.</p>
+  <CTAButton href={whatsappHref}>Hablar por WhatsApp</CTAButton>
+</section>
+
+<style>
+  .final-cta {
+    text-align: center;
+    padding: 100px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .final-cta h2 {
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 800;
+    margin: 0 0 12px;
+  }
+  .final-cta p {
+    color: var(--fg-muted);
+    margin: 0 0 28px;
+  }
+</style>

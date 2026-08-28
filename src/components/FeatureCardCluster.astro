@@ -1,0 +1,60 @@
+---
+import FeatureCard from './FeatureCard.astro';
+import type { FeatureCardData } from '../lib/sections';
+
+interface Props {
+  cards: FeatureCardData[];
+  dimmed?: boolean;
+}
+
+const { cards, dimmed = false } = Astro.props;
+---
+
+<div class:list={['card-cluster', { dimmed }]}>
+  {cards.map((card) => (
+    <FeatureCard
+      icon={card.icon}
+      title={card.title}
+      value={card.value}
+      badgeText={card.badgeText}
+      badgeTone={card.badgeTone}
+      sparkline={card.sparkline}
+    />
+  ))}
+</div>
+
+<style>
+  .card-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+  }
+  .card-cluster > :global(.feature-card) {
+    width: 100%;
+  }
+  /* Rotación distinta por posición — mismo criterio "mazo tirado" que el mini-demo. */
+  .card-cluster > :global(.feature-card:nth-child(1)) {
+    transform: rotate(-3deg) translateX(-10px);
+  }
+  .card-cluster > :global(.feature-card:nth-child(2)) {
+    transform: rotate(2.5deg) translateX(10px);
+  }
+  .card-cluster > :global(.feature-card:nth-child(3)) {
+    transform: rotate(-1.5deg) translateX(-4px);
+  }
+  .card-cluster > :global(.feature-card:not(:first-child)) {
+    margin-top: -18px;
+  }
+  .card-cluster.dimmed {
+    opacity: 0.55;
+    filter: grayscale(0.35);
+  }
+
+  @media (min-width: 900px) {
+    .card-cluster {
+      max-width: 400px;
+    }
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+import Icon from './Icon.astro';
+import type { BadgeTone } from '../lib/sections';
+
+interface Props {
+  icon: string;
+  title: string;
+  value: string;
+  badgeText?: string;
+  badgeTone?: BadgeTone;
+  sparkline?: number[];
+}
+
+const { icon, title, value, badgeText, badgeTone = 'neutral', sparkline } = Astro.props;
+
+function sparklinePoints(data: number[]): string {
+  const w = 100;
+  const h = 32;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  return data
+    .map((v, i) => {
+      const x = (i / (data.length - 1)) * w;
+      const y = h - ((v - min) / range) * h;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+---
+
+<div class="feature-card">
+  <div class="feature-card-top">
+    <span class="feature-card-icon"><Icon name={icon} size={18} /></span>
+    {badgeText && <span class={`feature-card-badge tone-${badgeTone}`}>{badgeText}</span>}
+  </div>
+  <div class="feature-card-value">{value}</div>
+  <div class="feature-card-title">{title}</div>
+  {sparkline && (
+    <svg class="feature-card-spark" viewBox="0 0 100 32" preserveAspectRatio="none">
+      <polyline
+        points={sparklinePoints(sparkline)}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  )}
+</div>
+
+<style>
+  .feature-card {
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+    color: var(--fg);
+  }
+  .feature-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .feature-card-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--section-accent, var(--accent-violet));
+    background: color-mix(in srgb, var(--section-accent, var(--accent-violet)) 22%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--section-accent-glow, var(--accent-violet-glow)) 45%, transparent);
+  }
+  .feature-card-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+  .tone-positive {
+    background: rgba(120, 220, 150, 0.15);
+    color: #8ff0ac;
+  }
+  .tone-info {
+    background: rgba(120, 180, 255, 0.15);
+    color: #9cc4ff;
+  }
+  .tone-neutral {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--fg-muted);
+  }
+  .feature-card-value {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+  .feature-card-title {
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .feature-card-spark {
+    display: block;
+    width: 100%;
+    height: 32px;
+    margin-top: 10px;
+    color: var(--section-accent, var(--accent-violet));
+  }
+</style>

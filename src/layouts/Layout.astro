@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+import TopBar from '../components/TopBar.astro';
+import WhatsAppQR from '../components/WhatsAppQR.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'AURA — No es un POS. Es tu asistente de ventas.',
+  description = 'AURA es el asistente de ventas de un solo click para tu negocio: punto de venta, domicilios, pedidos, pagos con Wompi y tienda online, sin la complejidad de un POS tradicional.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+U:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <TopBar />
+    <WhatsAppQR />
+    <slot />
+  </body>
+</html>

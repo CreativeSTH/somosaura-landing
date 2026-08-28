@@ -1,0 +1,117 @@
+---
+import ComponentCard from './ComponentCard.astro';
+import type { ComponentCardData, ComponentCategory } from '../lib/softwareComponents';
+
+interface Props {
+  category: ComponentCategory;
+  items: ComponentCardData[];
+}
+
+const { category, items } = Astro.props;
+
+const accentVars: Record<string, string> = {
+  violet: '--accent-violet',
+  teal: '--accent-teal',
+  pink: '--accent-pink',
+  blue: '--accent-blue',
+  orange: '--accent-orange',
+  amber: '--accent-amber',
+};
+const glowVars: Record<string, string> = {
+  violet: '--accent-violet-glow',
+  teal: '--accent-teal-glow',
+  pink: '--accent-pink-glow',
+  blue: '--accent-blue-glow',
+  orange: '--accent-orange-glow',
+  amber: '--accent-amber-glow',
+};
+
+// Rotación/offset/delay pseudo-aleatorios pero deterministas por índice —
+// mismo criterio "mazo tirado" que FeatureCardCluster/MiniDemo, escalado.
+function jitter(i: number) {
+  const rot = ((i * 37) % 9) - 4; // -4..4deg
+  const ty = ((i * 53) % 13) - 6; // -6..6px
+  const delay = (i % 6) * 70; // ms, onda corta que se repite cada 6 cards
+  return { rot, ty, delay };
+}
+---
+
+<section
+  class="component-zone"
+  style={`--section-accent: var(${accentVars[category.accent]}); --section-accent-glow: var(${glowVars[category.accent]});`}
+>
+  <p class="component-zone-eyebrow zone-reveal">{category.label}</p>
+  <div class="component-grid">
+    {items.map((item, i) => {
+      const { rot, ty, delay } = jitter(i);
+      return (
+        <ComponentCard
+          icon={item.icon}
+          title={item.title}
+          tagline={item.tagline}
+          description={item.description}
+          badge={item.badge}
+          rot={rot}
+          ty={ty}
+          delay={delay}
+        />
+      );
+    })}
+  </div>
+</section>
+
+<style>
+  .component-zone {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  .component-zone-eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: var(--section-accent);
+    margin: 0 0 20px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  }
+  .component-zone-eyebrow.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .component-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (min-width: 640px) {
+    .component-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .component-zone {
+      padding: 56px 60px;
+    }
+    .component-zone-eyebrow {
+      font-size: 13px;
+      text-align: left;
+    }
+    .component-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .component-zone-eyebrow {
+      transition: none;
+    }
+  }
+</style>

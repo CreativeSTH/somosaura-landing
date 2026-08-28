@@ -1,0 +1,76 @@
+---
+import { sections as homeSections } from '../lib/sections';
+import type { SectionDef } from '../lib/sections';
+
+interface Props {
+  /** Por defecto usa las secciones del home — pásale las propias para reusar el mismo nav lateral + motion de reveal en otra página. */
+  sections?: SectionDef[];
+}
+
+const { sections = homeSections } = Astro.props;
+---
+
+<nav class="site-nav" aria-label="Secciones de la página">
+  {sections.map((section) => (
+    <button type="button" class="site-nav-item" data-target={section.id}>
+      {section.navLabel ?? section.eyebrow}
+    </button>
+  ))}
+</nav>
+
+<script>
+  import { observeSections } from '../lib/sectionObserver';
+  import { revealSection, hideSection } from '../lib/motion';
+
+  const navItems = document.querySelectorAll<HTMLButtonElement>('.site-nav-item');
+
+  function setActive(id: string) {
+    navItems.forEach((item) => {
+      item.classList.toggle('active', item.dataset.target === id);
+    });
+  }
+
+  navItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      document.querySelector(`[data-section-id="${item.dataset.target}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  });
+
+  observeSections({ onActivate: setActive, onReveal: revealSection, onHide: hideSection });
+</script>
+
+<style>
+  .site-nav {
+    position: fixed;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+  }
+  .site-nav-item {
+    background: none;
+    border: none;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 0;
+    color: var(--fg-faint);
+    cursor: pointer;
+    transition: color 0.25s var(--ease-out);
+  }
+  .site-nav-item.active {
+    color: var(--fg);
+  }
+
+  @media (max-width: 900px) {
+    .site-nav {
+      display: none;
+    }
+  }
+</style>
