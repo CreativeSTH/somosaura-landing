@@ -1,0 +1,84 @@
+---
+interface Partner {
+  name: string;
+  src: string;
+  /** Para bajarlo temporalmente de la franja sin perder el logo ya conseguido. */
+  hidden?: boolean;
+}
+
+const partners: Partner[] = [
+  { name: 'Alegra', src: '/aliados/alegra.svg' },
+  { name: 'Wompi', src: '/aliados/wompi.svg' },
+  // Ocultos por ahora para el MVP — logos ya listos, solo hay que sacarles el `hidden` cuando se reactiven.
+  { name: 'Fondo Emprender - SENA', src: '/aliados/fondo-emprender.svg', hidden: true },
+  { name: 'Interrapidísimo', src: '/aliados/interrapidisimo.png', hidden: true },
+];
+
+const visiblePartners = partners.filter((p) => !p.hidden);
+---
+
+<section class="partners" aria-label="Aliados">
+  <p class="partners-eyebrow">Aliados</p>
+  <ul class="partners-list">
+    {visiblePartners.map((partner) => (
+      <li>
+        <img class="partners-logo" src={partner.src} alt={partner.name} loading="lazy" />
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .partners {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 40px 24px 88px;
+    text-align: center;
+  }
+  .partners-eyebrow {
+    font-size: clamp(26px, 3.4vw, 34px);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--fg);
+    margin: 0;
+  }
+  .partners-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 44px 64px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .partners-logo {
+    display: block;
+    height: 40px;
+    width: auto;
+    /* Todos los logos entran con el mismo tratamiento monocromo (silueta
+       blanca), sin importar sus colores originales — se ven a color recién
+       al hacer hover, como el resto de los hovers del sitio. */
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+    transition: opacity 0.25s var(--ease-out), filter 0.25s var(--ease-out);
+  }
+  .partners-logo:hover {
+    filter: none;
+    opacity: 1;
+  }
+
+  @media (min-width: 900px) {
+    .partners-logo {
+      height: 48px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .partners-logo {
+      transition: none;
+    }
+  }
+</style>

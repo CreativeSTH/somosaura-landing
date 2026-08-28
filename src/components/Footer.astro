@@ -1,0 +1,495 @@
+---
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
+const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+const footerLinks = [
+  { label: 'Soporte', href: whatsappHref, external: true },
+  { label: 'Inicio', href: '/' },
+  { label: '¿Qué es Aura?', href: '/que-es-aura' },
+  { label: 'Conoce Aura a Fondo', href: '/nuestro-software' },
+  { label: 'Planes', href: '/planes' },
+  { label: 'Privacidad', href: '/politica-de-privacidad' },
+];
+---
+
+<footer class="footer">
+  <!-- Franja de "aurora" en WebGL, igual mecánica que rainbow.me: vive detrás
+       de TODO (z-index -1, escapa al stacking context raíz porque .footer no
+       trae z-index propio) y es más alta que el footer mismo, así que sangra
+       hacia arriba por detrás del FinalCTA de encima. Apagada del todo en
+       mobile y si el navegador no tiene WebGL — es decorativa y aria-hidden. -->
+  <div class="aurora" aria-hidden="true"><canvas class="aurora-canvas"></canvas></div>
+
+  <div class="footer-section footer-logo">
+    <span class="footer-logo-dot"></span>
+    aura
+  </div>
+
+  <ul class="footer-section footer-links">
+    {footerLinks.map((link) => (
+      <li>
+        <a
+          class="footer-link"
+          href={link.href}
+          target={link.external ? '_blank' : undefined}
+          rel={link.external ? 'noopener noreferrer' : undefined}
+        >
+          {link.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</footer>
+
+<script>
+  // Puerto del efecto "aurora" del footer de rainbow.me: un triángulo
+  // full-screen en WebGL con un fragment shader de ruido fbm que dibuja
+  // cortinas de luz creciendo desde abajo, mezcladas entre 4 colores de
+  // marca, con el cursor "separando" la cortina a su paso. Mismo mecanismo,
+  // mismos parámetros — solo cambian los 4 colores (los de AURA en vez de
+  // los de Rainbow).
+
+  const STOP_VARS = ['--aura-stop-1', '--aura-stop-2', '--aura-stop-3', '--aura-stop-4'];
+  const FALLBACK_STOPS = ['#7c5cff', '#ff5fa8', '#ff8a3d', '#2fd6ae'];
+
+  const VERTEX_SRC = `
+    attribute vec2 aPos;
+    void main() { gl_Position = vec4(aPos, 0.0, 1.0); }
+  `;
+
+  const FRAGMENT_SRC = `
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    #else
+    precision mediump float;
+    #endif
+
+    uniform vec2 uRes;
+    uniform float uTime;
+    uniform float uReveal;
+    uniform vec3 uStops[4];
+    uniform float uGain;
+    uniform float uDrift;
+    uniform float uFil;
+    uniform float uGrain;
+    uniform float uFringe;
+    uniform float uFlicker;
+    uniform float uStretch;
+    uniform float uLift;
+    uniform vec2 uMouse;
+    uniform float uStir;
+
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+
+    float fbm(vec2 p) {
+      float v = 0.5 * noise(p);
+      p = p * 2.03 + 19.19;
+      v += 0.25 * noise(p);
+      p = p * 1.97 - 7.73;
+      v += 0.125 * noise(p);
+      return v * 1.1428;
+    }
+
+    vec3 ramp(float t) {
+      vec3 a = uStops[0] * uStops[0];
+      vec3 b = uStops[1] * uStops[1];
+      vec3 c = uStops[2] * uStops[2];
+      vec3 d = uStops[3] * uStops[3];
+      vec3 col = mix(a, b, smoothstep(0.0, 0.5, t));
+      col = mix(col, c, smoothstep(0.5, 0.75, t));
+      col = mix(col, d, smoothstep(0.75, 1.0, t));
+      return sqrt(col);
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / uRes;
+      float x = uv.x * (uRes.x / uRes.y) * uStretch;
+      float yb = uv.y * uStretch;
+      float t = uTime;
+      float T = t * uDrift;
+
+      float d = abs(uv.x - 0.5) * 2.0;
+      float front = 1.0 - smoothstep(uReveal * 1.6 - 0.55, uReveal * 1.6, d);
+      float lift = 1.0 + (uLift - 1.0) * smoothstep(0.15, 0.95, d);
+      float y = yb / ((0.25 + 0.75 * front) * lift);
+
+      vec2 mo = vec2(x, yb) - uMouse;
+      float g = exp(-(mo.x * mo.x * 2.5 + mo.y * mo.y * 1.2));
+      float part = mo.x * g * uStir;
+
+      float sway = fbm(vec2(x * 0.55 - T * 0.05, T * 0.045)) - 0.5;
+      float xx = x + sway * 0.9 + T * 0.035 - part * 1.2;
+
+      float r = fbm(vec2(xx * 1.35 + T * 0.02, y * 0.35 - T * 0.055));
+      float reach = 0.18 + 1.1 * r * r;
+      float curtain = (1.0 - smoothstep(reach * 0.08, reach, y)) * exp(-y * 1.8);
+      float shimmer = 0.8 + 0.4 * noise(vec2(xx * 2.6, y * 1.2 - T * 0.16));
+
+      float fn = noise(vec2(xx * 16.0 + y * 0.8, y * 1.4 - T * 0.12));
+      float striae = mix(1.0, 0.35 + 1.3 * smoothstep(0.3, 0.8, fn), uFil);
+
+      float breathe = 1.0 - uFlicker * 0.5 * noise(vec2(x * 0.9 + 47.0, T * 0.09));
+      float glare = exp(-y * 5.5) * (0.55 + 0.45 * fbm(vec2(x * 0.7 + T * 0.03, T * 0.02)));
+      float topFade = 1.0 - smoothstep(uStretch * 0.8, uStretch * 0.985, yb);
+
+      float I = (curtain * shimmer * striae * 0.85 + glare * 0.7) * breathe * front * topFade;
+      I *= 1.0 + 0.25 * sin(clamp(uReveal, 0.0, 1.0) * 3.14159);
+      I *= 1.0 + 0.3 * uStir * g;
+      I *= uGain;
+      I *= 1.0 + uGrain * 0.6 * (hash(gl_FragCoord.xy + vec2(fract(t * 7.0) * 173.0, fract(t * 3.0) * 89.0)) - 0.5);
+
+      float hc = clamp(uv.x + (fbm(vec2(x * 0.35 + 31.4, T * 0.035)) - 0.5) * 0.7 + y * 0.06, 0.0, 1.0);
+      float fr = uFringe * 0.05;
+      vec3 col = vec3(ramp(hc - fr).r, ramp(hc).g, ramp(hc + fr).b) * I;
+
+      col = max(col + (hash(gl_FragCoord.xy + fract(t) * 61.0) - 0.5) * 0.006, 0.0);
+      float a = clamp(max(col.r, max(col.g, col.b)), 0.0, 1.0);
+      gl_FragColor = vec4(col, a);
+    }
+  `;
+
+  const PARAMS = { gain: 0.18, drift: 3.2, filaments: 0, grain: 0, fringe: 1, flicker: 1, edgeLift: 2.1, mouseStir: 0.6 };
+  const REVEAL_MS = 3400;
+  const REVEAL_THRESHOLD = 0.85;
+  const RENDER_SCALE = 0.5;
+  const MOUSE_REF_PX = 600;
+
+  function initAurora() {
+    const rootMaybe = document.querySelector<HTMLElement>('.aurora');
+    const canvasMaybe = rootMaybe?.querySelector<HTMLCanvasElement>('.aurora-canvas');
+    if (!rootMaybe || !canvasMaybe) return;
+    // Referencias no-nulas: las funciones anidadas más abajo (resize/frame/start)
+    // capturan estas constantes por closure — TS no propaga el null-check de
+    // arriba dentro de ellas, así que las re-asignamos acá una sola vez.
+    const root = rootMaybe;
+    const canvas = canvasMaybe;
+    // Mismo criterio que el resto del sitio (topbar/QR): apagado en mobile.
+    if (window.matchMedia('(max-width: 900px)').matches) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const gl = canvas.getContext('webgl', {
+      alpha: true,
+      depth: false,
+      stencil: false,
+      antialias: false,
+      premultipliedAlpha: true,
+      powerPreference: 'low-power',
+      failIfMajorPerformanceCaveat: true,
+    });
+    // Sin fallback CSS a propósito: es una capa decorativa aria-hidden — si
+    // no hay WebGL, el footer se ve bien igual sin ella.
+    if (!gl) return;
+
+    const styles = getComputedStyle(document.documentElement);
+    const probe = document.createElement('canvas');
+    probe.width = probe.height = 1;
+    const probeCtx = probe.getContext('2d', { willReadFrequently: true })!;
+    const stops = new Float32Array(12);
+    STOP_VARS.forEach((varName, i) => {
+      probeCtx.fillStyle = styles.getPropertyValue(varName).trim() || FALLBACK_STOPS[i];
+      probeCtx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = probeCtx.getImageData(0, 0, 1, 1).data;
+      stops.set([r / 255, g / 255, b / 255], i * 3);
+    });
+
+    let uRes: WebGLUniformLocation | null = null;
+    let uTime: WebGLUniformLocation | null = null;
+    let uReveal: WebGLUniformLocation | null = null;
+    let uStretch: WebGLUniformLocation | null = null;
+    let uMouse: WebGLUniformLocation | null = null;
+    let uStir: WebGLUniformLocation | null = null;
+
+    function compile(type: number, src: string) {
+      const shader = gl!.createShader(type)!;
+      gl!.shaderSource(shader, src);
+      gl!.compileShader(shader);
+      return shader;
+    }
+
+    function link() {
+      const program = gl!.createProgram()!;
+      const vertex = compile(gl!.VERTEX_SHADER, VERTEX_SRC);
+      const fragment = compile(gl!.FRAGMENT_SHADER, FRAGMENT_SRC);
+      gl!.attachShader(program, vertex);
+      gl!.attachShader(program, fragment);
+      gl!.bindAttribLocation(program, 0, 'aPos');
+      gl!.linkProgram(program);
+      if (!gl!.getProgramParameter(program, gl!.LINK_STATUS)) {
+        console.warn('aurora: shader failed —', gl!.getShaderInfoLog(fragment) || gl!.getShaderInfoLog(vertex));
+        return false;
+      }
+      gl!.useProgram(program);
+      gl!.bindBuffer(gl!.ARRAY_BUFFER, gl!.createBuffer());
+      // Triángulo que cubre toda la pantalla — más barato que un quad de 2 triángulos.
+      gl!.bufferData(gl!.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl!.STATIC_DRAW);
+      gl!.enableVertexAttribArray(0);
+      gl!.vertexAttribPointer(0, 2, gl!.FLOAT, false, 0, 0);
+
+      uRes = gl!.getUniformLocation(program, 'uRes');
+      uTime = gl!.getUniformLocation(program, 'uTime');
+      uReveal = gl!.getUniformLocation(program, 'uReveal');
+      uStretch = gl!.getUniformLocation(program, 'uStretch');
+      uMouse = gl!.getUniformLocation(program, 'uMouse');
+      uStir = gl!.getUniformLocation(program, 'uStir');
+
+      gl!.uniform3fv(gl!.getUniformLocation(program, 'uStops[0]'), stops);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uGain'), PARAMS.gain);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uDrift'), PARAMS.drift);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uFil'), PARAMS.filaments);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uGrain'), PARAMS.grain);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uFringe'), PARAMS.fringe);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uFlicker'), PARAMS.flicker);
+      gl!.uniform1f(gl!.getUniformLocation(program, 'uLift'), PARAMS.edgeLift);
+      return true;
+    }
+
+    if (!link()) return;
+    if (reducedMotion) root.classList.add('aurora-static');
+
+    // Velocidad del mouse acumulada (decae con el tiempo) — separa la
+    // cortina alrededor del cursor vía uStir. Suavizado exponencial para
+    // que la posición no salte frame a frame.
+    let mouseX = 0;
+    let mouseY = 0;
+    let hasMouse = false;
+    let stirRaw = 0;
+    let smoothX = 0;
+    let smoothY = 0;
+    let smoothInit = false;
+    let lastFrameTime = 0;
+
+    if (!reducedMotion) {
+      addEventListener(
+        'mousemove',
+        (e) => {
+          if (hasMouse) stirRaw = Math.min(1, stirRaw + Math.hypot(e.clientX - mouseX, e.clientY - mouseY) / 260);
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          hasMouse = true;
+        },
+        { passive: true }
+      );
+    }
+
+    let rafId = 0;
+    let isIntersecting = false;
+    let started = false;
+    let startTime = 0;
+
+    function frame(now: number) {
+      const reveal = Math.min(1, (now - startTime) / REVEAL_MS);
+      gl!.uniform1f(uTime, (now / 1000) % 65536);
+      gl!.uniform1f(uReveal, 1 - Math.pow(1 - reveal, 3));
+
+      if (hasMouse) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (mouseX - rect.left) / MOUSE_REF_PX;
+        const y = (rect.bottom - mouseY) / MOUSE_REF_PX;
+        const dt = now - lastFrameTime;
+        const smoothing = 1 - Math.exp(-dt / 180);
+        if (smoothInit) {
+          smoothX += (x - smoothX) * smoothing;
+          smoothY += (y - smoothY) * smoothing;
+        } else {
+          smoothX = x;
+          smoothY = y;
+          smoothInit = true;
+        }
+        stirRaw *= Math.exp(-dt / 900);
+        gl!.uniform2f(uMouse, smoothX, smoothY);
+        gl!.uniform1f(uStir, PARAMS.mouseStir * stirRaw);
+      }
+      lastFrameTime = now;
+      gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+    }
+
+    function tick(now: number) {
+      rafId = 0;
+      frame(now);
+      if (isIntersecting) rafId = requestAnimationFrame(tick);
+    }
+
+    function play() {
+      if (started && isIntersecting && !rafId && !reducedMotion) rafId = requestAnimationFrame(tick);
+    }
+    function pause() {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+
+    function resize(force: boolean) {
+      const rect = root.getBoundingClientRect();
+      const scale = Math.min(window.devicePixelRatio || 1, 2) * RENDER_SCALE;
+      const w = Math.max(1, Math.round(rect.width * scale));
+      const h = Math.max(1, Math.round(rect.height * scale));
+      if (!force && w === canvas.width && h === canvas.height) return;
+      canvas.width = w;
+      canvas.height = h;
+      gl!.viewport(0, 0, w, h);
+      gl!.uniform2f(uRes, w, h);
+      gl!.uniform1f(uStretch, rect.height / MOUSE_REF_PX);
+      if (started && reducedMotion) frame(performance.now());
+    }
+
+    resize(true);
+    new ResizeObserver(() => resize(false)).observe(root);
+
+    function start() {
+      if (started) return;
+      started = true;
+      startTime = performance.now();
+      root.classList.add('is-on');
+      if (reducedMotion) {
+        // Sin loop de animación: se dibuja un único frame ya "revelado".
+        startTime -= REVEAL_MS;
+        frame(performance.now());
+      } else {
+        play();
+      }
+    }
+
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) isIntersecting = entry.isIntersecting;
+        if (!started && entries.some((e) => e.intersectionRatio >= REVEAL_THRESHOLD - 0.01)) start();
+        if (isIntersecting) play();
+        else pause();
+      },
+      { threshold: [0, REVEAL_THRESHOLD] }
+    ).observe(root);
+
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      pause();
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      if (!link()) return;
+      resize(true);
+      if (started && reducedMotion) frame(performance.now());
+      play();
+    });
+  }
+
+  initAurora();
+</script>
+
+<style>
+  .footer {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 32px 40px 40px;
+  }
+  .footer-section {
+    display: flex;
+    flex-direction: column;
+  }
+  .footer-logo {
+    /* El QR de WhatsApp (WhatsAppQR.astro) es `position: fixed; z-index: 50`
+       anclado abajo a la izquierda — justo donde cae el wordmark al llegar
+       al final de la página. z-index más alto para que quede siempre encima;
+       el padding/margin negativo agranda un poco su propia caja (sin mover
+       nada visualmente) para que el QR no le pise ni el borde. */
+    position: relative;
+    z-index: 51;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    margin: -10px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--fg);
+    letter-spacing: 0.01em;
+  }
+  .footer-logo-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-violet-glow);
+    box-shadow: 0 0 8px var(--accent-violet-glow), 0 0 18px rgba(124, 92, 255, 0.55);
+  }
+  .footer-links {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 22px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer-link {
+    color: var(--fg-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s var(--ease-out);
+  }
+  .footer-link:hover {
+    color: var(--fg);
+  }
+
+  /* Franja de aurora: más alta que el propio footer y sin z-index en su
+     ancestro directo, así que su z-index: -1 escapa al stacking context
+     raíz y queda detrás de TODA la página — incluido el FinalCTA de arriba,
+     igual que en rainbow.me. */
+  .aurora {
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: min(960px, 85svh);
+    pointer-events: none;
+  }
+  .aurora-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .aurora-static .aurora-canvas {
+    opacity: 0;
+    transition: opacity 2.4s var(--ease-out);
+  }
+  .aurora-static.is-on .aurora-canvas {
+    opacity: 1;
+  }
+
+  /* El aurora se apaga en el mismo umbral que el resto del sitio (topbar/QR) —
+     es una decisión de performance en mobile, no de layout. El menú del
+     footer se mantiene horizontal en cualquier ancho de escritorio y solo se
+     apila en columna en pantallas de teléfono (ver media query de abajo). */
+  @media (max-width: 900px) {
+    .aurora {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .footer {
+      flex-direction: column;
+      text-align: center;
+      gap: 20px;
+      padding: 32px 24px 48px;
+    }
+    .footer-links {
+      justify-content: center;
+    }
+  }
+</style>
