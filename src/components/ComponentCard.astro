@@ -1,0 +1,131 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  icon: string;
+  title: string;
+  tagline: string;
+  description: string;
+  badge?: string;
+  /** Rotación/offset "mazo tirado" — solo se aplican en desktop (ver media query abajo). */
+  rot?: number;
+  ty?: number;
+  /** Delay del reveal escalonado en ms, calculado por el llamador (ComponentZone). */
+  delay?: number;
+}
+
+const { icon, title, tagline, description, badge, rot = 0, ty = 0, delay = 0 } = Astro.props;
+---
+
+<button
+  type="button"
+  class="component-card"
+  style={`--card-rot:${rot}deg;--card-ty:${ty}px;`}
+  data-delay={delay}
+  data-title={title}
+  data-desc={description}
+  data-badge={badge ?? ''}
+  aria-haspopup="dialog"
+>
+  <span class="component-card-top">
+    <span class="component-card-icon"><Icon name={icon} size={20} /></span>
+    {badge && <span class="component-card-badge">{badge}</span>}
+  </span>
+  <span class="component-card-title">{title}</span>
+  <span class="component-card-tagline">{tagline}</span>
+</button>
+
+<style>
+  .component-card {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+    color: var(--fg);
+    /* Reposo (pre-reveal): mobile-first — sin rotación acá, solo fade + settle.
+       El "desorden" con rotación queda reservado para desktop (media query
+       abajo), donde hay espacio de sobra para que se vea bien. */
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+    transition:
+      opacity 0.5s var(--ease-out),
+      transform 0.5s var(--ease-out),
+      border-color 0.2s var(--ease-out),
+      box-shadow 0.2s var(--ease-out);
+  }
+  .component-card.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .component-card:hover,
+  .component-card:focus-visible {
+    border-color: var(--section-accent, var(--accent-violet));
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px color-mix(in srgb, var(--section-accent-glow, var(--accent-violet-glow)) 30%, transparent);
+  }
+  .component-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .component-card-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--section-accent, var(--accent-violet));
+    background: color-mix(in srgb, var(--section-accent, var(--accent-violet)) 22%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--section-accent-glow, var(--accent-violet-glow)) 45%, transparent);
+  }
+  .component-card-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 200, 80, 0.15);
+    color: #ffd479;
+    border: 1px solid rgba(255, 200, 80, 0.35);
+    white-space: nowrap;
+  }
+  .component-card-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .component-card-tagline {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+
+  /* Desktop: acá sí aparece el desorden — cada card gira/se desplaza un poco
+     (valores por tarjeta calculados en ComponentZone), y se endereza + crece
+     un toque al pasar el mouse. En mobile nunca se aplica: ahí las cards
+     quedan derechas, apiladas, fáciles de tocar. */
+  @media (min-width: 900px) {
+    .component-card.is-visible {
+      transform: rotate(var(--card-rot, 0deg)) translateY(var(--card-ty, 0px)) scale(1);
+    }
+    .component-card:hover {
+      transform: rotate(0deg) translateY(-4px) scale(1.04);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .component-card {
+      transition: none;
+    }
+  }
+</style>

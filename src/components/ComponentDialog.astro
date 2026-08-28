@@ -1,0 +1,190 @@
+---
+import Icon from './Icon.astro';
+---
+
+<div class="component-dialog-backdrop" id="componentDialogBackdrop">
+  <div class="component-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="componentDialogTitle">
+    <button type="button" class="component-dialog-close" id="componentDialogClose" aria-label="Cerrar">
+      <Icon name="x" size={16} />
+    </button>
+    <span class="component-dialog-icon" id="componentDialogIcon"></span>
+    <p class="component-dialog-badge" id="componentDialogBadge" hidden></p>
+    <h3 class="component-dialog-title" id="componentDialogTitle"></h3>
+    <p class="component-dialog-desc" id="componentDialogDesc"></p>
+  </div>
+</div>
+
+<script>
+  const backdrop = document.getElementById('componentDialogBackdrop')!;
+  // Igual gotcha que el modal de MiniDemo y el menú del topbar: cualquier
+  // ancestro con filter/backdrop-filter atrapa un `position: fixed` propio.
+  // Lo sacamos a hijo directo de <body> para que cubra la pantalla real.
+  document.body.appendChild(backdrop);
+
+  const iconEl = document.getElementById('componentDialogIcon')!;
+  const badgeEl = document.getElementById('componentDialogBadge')!;
+  const titleEl = document.getElementById('componentDialogTitle')!;
+  const descEl = document.getElementById('componentDialogDesc')!;
+  const closeBtn = document.getElementById('componentDialogClose')!;
+
+  function openDialog(card: HTMLElement) {
+    // El ícono ya viene renderizado (por Astro, a build time) adentro de la
+    // card clickeada — lo clonamos en vez de tener que mapear 17 íconos acá.
+    // El color/fondo/glow los copiamos del computed style así el dialog
+    // hereda el acento correcto sin tener que saber de qué categoría vino.
+    const iconSrc = card.querySelector('.component-card-icon');
+    iconEl.innerHTML = iconSrc ? iconSrc.innerHTML : '';
+    if (iconSrc) {
+      const cs = getComputedStyle(iconSrc);
+      iconEl.style.color = cs.color;
+      iconEl.style.background = cs.backgroundColor;
+      iconEl.style.boxShadow = cs.boxShadow;
+    }
+
+    titleEl.textContent = card.dataset.title ?? '';
+    descEl.textContent = card.dataset.desc ?? '';
+
+    if (card.dataset.badge) {
+      badgeEl.textContent = card.dataset.badge;
+      badgeEl.hidden = false;
+    } else {
+      badgeEl.hidden = true;
+    }
+
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDialog() {
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Delegado en document: no hace falta enganchar listener card por card.
+  document.addEventListener('click', (e) => {
+    const card = (e.target as HTMLElement).closest<HTMLElement>('.component-card');
+    if (card) openDialog(card);
+  });
+
+  closeBtn.addEventListener('click', closeDialog);
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeDialog();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && backdrop.classList.contains('open')) closeDialog();
+  });
+
+  // Reveal escalonado de las cards y los títulos de zona: "no aparecen todas
+  // al mismo tiempo" — cada una entra con su propio delay (data-delay,
+  // calculado en ComponentZone) apenas cruza el viewport, una sola vez.
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealTargets = document.querySelectorAll<HTMLElement>('.component-card, .zone-reveal');
+
+  if (reducedMotion) {
+    revealTargets.forEach((el) => el.classList.add('is-visible'));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const el = entry.target as HTMLElement;
+          const delay = Number(el.dataset.delay || '0');
+          window.setTimeout(() => el.classList.add('is-visible'), delay);
+          io.unobserve(el);
+        }
+      },
+      { threshold: 0.15 }
+    );
+    revealTargets.forEach((el) => io.observe(el));
+  }
+</script>
+
+<style>
+  .component-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(4, 3, 8, 0.6);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease-out);
+  }
+  .component-dialog-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .component-dialog-panel {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    background: #0d0a14;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 28px 24px 26px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+    text-align: left;
+  }
+  .component-dialog-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    border-radius: 50%;
+    color: var(--fg-muted);
+    cursor: pointer;
+    padding: 0;
+  }
+  .component-dialog-close:hover {
+    color: var(--fg);
+  }
+  .component-dialog-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .component-dialog-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 200, 80, 0.15);
+    color: #ffd479;
+    border: 1px solid rgba(255, 200, 80, 0.35);
+    margin: 0 0 10px;
+  }
+  .component-dialog-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 10px;
+  }
+  .component-dialog-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .component-dialog-backdrop {
+      transition: none;
+    }
+  }
+</style>
