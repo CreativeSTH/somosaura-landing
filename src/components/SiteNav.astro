@@ -1,5 +1,13 @@
 ---
-import { sections } from '../lib/sections';
+import { sections as homeSections } from '../lib/sections';
+import type { SectionDef } from '../lib/sections';
+
+interface Props {
+  /** Por defecto usa las secciones del home — pásale las propias para reusar el mismo nav lateral + motion de reveal en otra página. */
+  sections?: SectionDef[];
+}
+
+const { sections = homeSections } = Astro.props;
 ---
 
 <nav class="site-nav" aria-label="Secciones de la página">

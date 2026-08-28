@@ -5,9 +5,11 @@ import type { SectionDef } from '../lib/sections';
 
 interface Props {
   section: SectionDef;
+  /** Invierte el orden en desktop (visual | texto en vez de texto | visual) — para páginas de varias secciones cortas que quieran alternar el lado, tipo "diseño intercalado". El home no lo usa, todas sus secciones quedan igual que antes. */
+  reverse?: boolean;
 }
 
-const { section } = Astro.props;
+const { section, reverse = false } = Astro.props;
 
 const accentVars: Record<string, string> = {
   violet: '--accent-violet',
@@ -30,7 +32,7 @@ const glowVars: Record<string, string> = {
 <section
   id={section.id}
   data-section-id={section.id}
-  class="section"
+  class:list={['section', { 'section-reverse': reverse }]}
   style={`--section-accent: var(${accentVars[section.accent]}); --section-accent-glow: var(${glowVars[section.accent]});`}
 >
   <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
@@ -83,6 +85,9 @@ const glowVars: Record<string, string> = {
       flex: 1;
       display: flex;
       justify-content: center;
+    }
+    .section-reverse {
+      flex-direction: row-reverse;
     }
   }
 </style>
