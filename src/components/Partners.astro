@@ -2,16 +2,19 @@
 interface Partner {
   name: string;
   src: string;
+  /** Dimensiones intrínsecas reales del archivo — con esto el navegador reserva el espacio antes de cargar la imagen y no salta el layout (CLS). */
+  width: number;
+  height: number;
   /** Para bajarlo temporalmente de la franja sin perder el logo ya conseguido. */
   hidden?: boolean;
 }
 
 const partners: Partner[] = [
-  { name: 'Alegra', src: '/aliados/alegra.svg' },
-  { name: 'Wompi', src: '/aliados/wompi.svg' },
+  { name: 'Alegra', src: '/aliados/alegra.svg', width: 57, height: 19 },
+  { name: 'Wompi', src: '/aliados/wompi.svg', width: 1332, height: 348 },
   // Ocultos por ahora para el MVP — logos ya listos, solo hay que sacarles el `hidden` cuando se reactiven.
-  { name: 'Fondo Emprender - SENA', src: '/aliados/fondo-emprender.svg', hidden: true },
-  { name: 'Interrapidísimo', src: '/aliados/interrapidisimo.png', hidden: true },
+  { name: 'Fondo Emprender - SENA', src: '/aliados/fondo-emprender.svg', width: 1568, height: 414, hidden: true },
+  { name: 'Interrapidísimo', src: '/aliados/interrapidisimo.png', width: 1660, height: 360, hidden: true },
 ];
 
 const visiblePartners = partners.filter((p) => !p.hidden);
@@ -22,7 +25,14 @@ const visiblePartners = partners.filter((p) => !p.hidden);
   <ul class="partners-list">
     {visiblePartners.map((partner) => (
       <li>
-        <img class="partners-logo" src={partner.src} alt={partner.name} loading="lazy" />
+        <img
+          class="partners-logo"
+          src={partner.src}
+          alt={partner.name}
+          width={partner.width}
+          height={partner.height}
+          loading="lazy"
+        />
       </li>
     ))}
   </ul>

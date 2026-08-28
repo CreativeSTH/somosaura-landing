@@ -2,16 +2,35 @@
 import '../styles/global.css';
 import TopBar from '../components/TopBar.astro';
 import WhatsAppQR from '../components/WhatsAppQR.astro';
+import PageTransitionOverlay from '../components/PageTransitionOverlay.astro';
+import Loader from '../components/Loader.astro';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Para páginas que no deben indexarse (ej. 404) — nunca se usa en el resto del sitio. */
+  noindex?: boolean;
 }
 
 const {
   title = 'AURA — No es un POS. Es tu asistente de ventas.',
   description = 'AURA es el asistente de ventas de un solo click para tu negocio: punto de venta, domicilios, pedidos, pagos con Wompi y tienda online, sin la complejidad de un POS tradicional.',
+  noindex = false,
 } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = new URL('/screenshots/captura-dashboard.png', Astro.site);
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'AURA',
+  url: Astro.site?.toString(),
+  logo: new URL('/favicon.svg', Astro.site).toString(),
+  description:
+    'AURA es el asistente de ventas de un solo click para negocios: punto de venta, domicilios, pedidos, pagos con Wompi y tienda online.',
+  areaServed: 'CO',
+};
 ---
 
 <!doctype html>
@@ -19,25 +38,79 @@ const {
   <head>
     <script is:inline>
       document.documentElement.classList.add('js');
+
+      // Deja la página ya "cubierta" (ver PageTransitionOverlay.astro) antes
+      // del primer paint si viene de un click interceptado por
+      // pageTransition.ts en la página anterior — evita el flash mientras
+      // termina de cargar.
+      (function () {
+        var pendingColor = sessionStorage.getItem('aura:pageTransitionColor');
+        if (pendingColor) {
+          document.documentElement.classList.add('page-transition-pending', 'skip-loader');
+          document.documentElement.style.setProperty('--page-transition-color', 'var(' + pendingColor + ')');
+        }
+      })();
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonicalURL} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="AURA" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd)} is:inline />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Carga no bloqueante: el navegador la pide como si fuera de impresión
+         (no bloquea el render de pantalla) y el script de acá abajo la
+         activa para pantalla apenas está lista — mismo resultado visual, sin
+         sumar a "Solicitudes que bloquean el renderizado". El <noscript>
+         cubre el caso sin JS. -->
     <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+U:wght@400;600;700;800&display=swap"
+    />
+    <link
+      id="fontStylesheet"
       href="https://fonts.googleapis.com/css2?family=M+PLUS+U:wght@400;600;700;800&display=swap"
       rel="stylesheet"
+      media="print"
     />
+    <script is:inline>
+      document.getElementById('fontStylesheet').addEventListener('load', function () {
+        this.media = 'all';
+      });
+    </script>
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+U:wght@400;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
   </head>
   <body>
+    <PageTransitionOverlay />
+    <Loader />
     <TopBar />
     <WhatsAppQR />
     <slot />
   </body>
+
+  <script>
+    import { initPageTransition } from '../lib/pageTransition';
+    import { initLoader } from '../lib/loader';
+    initPageTransition();
+    initLoader();
+  </script>
 </html>

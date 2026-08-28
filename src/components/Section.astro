@@ -7,9 +7,11 @@ interface Props {
   section: SectionDef;
   /** Invierte el orden en desktop (visual | texto en vez de texto | visual) — para páginas de varias secciones cortas que quieran alternar el lado, tipo "diseño intercalado". El home no lo usa, todas sus secciones quedan igual que antes. */
   reverse?: boolean;
+  /** Pasa 'h1' en la primera sección de la página — ver SectionHeader.astro. */
+  headingLevel?: 'h1' | 'h2';
 }
 
-const { section, reverse = false } = Astro.props;
+const { section, reverse = false, headingLevel = 'h2' } = Astro.props;
 
 const accentVars: Record<string, string> = {
   violet: '--accent-violet',
@@ -35,7 +37,7 @@ const glowVars: Record<string, string> = {
   class:list={['section', { 'section-reverse': reverse }]}
   style={`--section-accent: var(${accentVars[section.accent]}); --section-accent-glow: var(${glowVars[section.accent]});`}
 >
-  <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} />
+  <SectionHeader eyebrow={section.eyebrow} title={section.title} copy={section.copy} badge={section.badge} as={headingLevel} />
   <div class="section-visual" data-visual-kind={section.visual}>
     {section.visual === 'cards' && section.cards && (
       <FeatureCardCluster cards={section.cards} dimmed={section.dimmedCards} />

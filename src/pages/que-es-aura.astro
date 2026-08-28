@@ -15,7 +15,7 @@ import { aboutSections } from '../lib/aboutSections';
   <SiteNav sections={aboutSections} />
   <main>
     {aboutSections.map((section, i) => (
-      <Section section={section} reverse={i % 2 === 1} />
+      <Section section={section} reverse={i % 2 === 1} headingLevel={i === 0 ? 'h1' : 'h2'} />
     ))}
     <FinalCTA />
     <Partners />

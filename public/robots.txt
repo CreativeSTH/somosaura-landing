@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://somosaura.com.co/sitemap.xml
+Sitemap: https://somosaura.com.co/sitemap-index.xml
