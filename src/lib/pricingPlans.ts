@@ -9,11 +9,22 @@ export interface PricingPlan {
   /** Nota corta debajo de la lista (excedentes, upsell, límites de documentos). */
   note?: string;
   highlight?: boolean;
+  /**
+   * UUID real del `Paquete` en pos-backend (pieza "Sistema de Paquetes/Planes"),
+   * no el slug de `id`. Placeholder intencional, no un TODO perdido — se
+   * reemplaza a mano por el UUID real una vez que alguien con permiso
+   * PAQUETES:CREAR cree este paquete desde /paquetes en cada ambiente
+   * (desarrollo/producción tienen UUIDs distintos, no hay forma de
+   * conocerlos de antemano). Consumido por /prueba-gratis (pieza "Registro
+   * público + prueba 20 días") para el formulario de signup.
+   */
+  paqueteId: string;
 }
 
 export const pricingPlans: PricingPlan[] = [
   {
     id: 'basico',
+    paqueteId: 'BASICO_PAQUETE_ID_PENDIENTE',
     name: 'POS Básico',
     price: 69900,
     audience: 'Tiendas pequeñas, misceláneas y negocios que entregan recibo POS o tirilla.',
@@ -33,6 +44,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     id: 'profesional',
+    paqueteId: 'PROFESIONAL_PAQUETE_ID_PENDIENTE',
     name: 'POS Profesional',
     price: 139900,
     audience: 'Pet shops, ferreterías, veterinarias y minimercados.',
@@ -47,6 +59,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     id: 'empresarial',
+    paqueteId: 'EMPRESARIAL_PAQUETE_ID_PENDIENTE',
     name: 'POS Empresarial',
     price: 219900,
     audience: 'Negocios con varias sucursales y equipos más grandes.',
