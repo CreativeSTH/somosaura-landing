@@ -5,13 +5,6 @@ import FinalCTA from '../components/FinalCTA.astro';
 import Partners from '../components/Partners.astro';
 import Footer from '../components/Footer.astro';
 import { pricingPlans } from '../lib/pricingPlans';
-
-const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
-
-function whatsappHrefFor(planName: string) {
-  const message = encodeURIComponent(`Quiero probar AURA (${planName}) gratis por 20 días.`);
-  return `https://wa.me/${whatsappNumber}?text=${message}`;
-}
 ---
 
 <Layout
@@ -29,7 +22,7 @@ function whatsappHrefFor(planName: string) {
 
     <section class="pricing-grid">
       {pricingPlans.map((plan) => (
-        <PricingCard plan={plan} ctaHref={whatsappHrefFor(plan.name)} />
+        <PricingCard plan={plan} ctaHref={`/prueba-gratis?plan=${plan.id}`} />
       ))}
     </section>
 

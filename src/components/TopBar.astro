@@ -1,10 +1,7 @@
 ---
 import Icon from './Icon.astro';
 
-const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
 const appUrl = import.meta.env.PUBLIC_APP_URL;
-const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
-const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
 
 const menuLinks = [
   { label: 'Inicio', href: '/' },
@@ -36,7 +33,7 @@ const menuLinks = [
     </a>
 
     <div class="topbar-actions">
-      <a class="topbar-cta" id="topbarCta" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+      <a class="topbar-cta" id="topbarCta" href="/prueba-gratis">
         Prueba gratis
         <span class="topbar-cta-glare"></span>
       </a>
@@ -53,7 +50,7 @@ const menuLinks = [
         <a href={link.href}>{link.label}</a>
       ))}
       <div class="topbar-menu-actions">
-        <a class="topbar-cta" href={whatsappHref} target="_blank" rel="noopener noreferrer">Prueba gratis</a>
+        <a class="topbar-cta" href="/prueba-gratis">Prueba gratis</a>
         <a class="topbar-enter" href={appUrl}>Entrar</a>
       </div>
     </div>

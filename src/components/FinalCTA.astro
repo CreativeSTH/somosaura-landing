@@ -1,15 +1,11 @@
 ---
 import CTAButton from './CTAButton.astro';
-
-const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER;
-const message = encodeURIComponent('Quiero probar AURA gratis por 20 días.');
-const whatsappHref = `https://wa.me/${whatsappNumber}?text=${message}`;
 ---
 
 <section class="final-cta" data-section-id="cta">
   <h2>Iniciá tu prueba gratis de 20 días.</h2>
-  <p>Sin tarjeta, sin instalar nada todavía — hablamos y lo dejamos listo juntos.</p>
-  <CTAButton href={whatsappHref}>Hablar por WhatsApp</CTAButton>
+  <p>Sin tarjeta — activá tu cuenta en minutos y probá todo el sistema.</p>
+  <CTAButton href="/prueba-gratis">Iniciar prueba gratis</CTAButton>
 </section>
 
 <style>

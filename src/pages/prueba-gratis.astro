@@ -28,7 +28,7 @@ import { formatCOP } from '../lib/formatCurrency';
         <legend>Elegí tu paquete</legend>
         {pricingPlans.map((plan) => (
           <label class="plan-option">
-            <input type="radio" name="paqueteId" value={plan.paqueteId} required />
+            <input type="radio" name="paqueteId" value={plan.paqueteId} data-plan-slug={plan.id} required />
             <span>{plan.name} — {formatCOP(plan.price)}/mes</span>
           </label>
         ))}
@@ -44,6 +44,18 @@ import { formatCOP } from '../lib/formatCurrency';
   const form = document.getElementById('signup-form') as HTMLFormElement;
   const mensaje = document.getElementById('signup-mensaje')!;
   const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+  // `output: 'static'` — no hay request real en build time, así que la
+  // preselección del plan que viene de /planes (?plan=slug) se resuelve acá
+  // en el cliente, no en el frontmatter de Astro (Astro.url ahí es el de
+  // build, sin query string real).
+  const planPreseleccionado = new URLSearchParams(window.location.search).get('plan');
+  if (planPreseleccionado) {
+    const radio = form.querySelector<HTMLInputElement>(
+      `input[name="paqueteId"][data-plan-slug="${planPreseleccionado}"]`,
+    );
+    if (radio) radio.checked = true;
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

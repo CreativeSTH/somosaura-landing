@@ -5,9 +5,15 @@ interface Props {
 }
 
 const { href, variant = 'primary' } = Astro.props;
+const isExternal = href.startsWith('http');
 ---
 
-<a class:list={['cta-button', variant]} href={href} target="_blank" rel="noopener noreferrer">
+<a
+  class:list={['cta-button', variant]}
+  href={href}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+>
   <slot />
 </a>
 
