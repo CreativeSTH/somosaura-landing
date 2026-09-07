@@ -24,7 +24,7 @@ export interface PricingPlan {
 export const pricingPlans: PricingPlan[] = [
   {
     id: 'basico',
-    paqueteId: 'BASICO_PAQUETE_ID_PENDIENTE',
+    paqueteId: 'b42ef301-b23e-42b7-941d-243f30e8f619',
     name: 'POS Básico',
     price: 69900,
     audience: 'Tiendas pequeñas, misceláneas y negocios que entregan recibo POS o tirilla.',
@@ -44,7 +44,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     id: 'profesional',
-    paqueteId: 'PROFESIONAL_PAQUETE_ID_PENDIENTE',
+    paqueteId: 'ad32a5a9-fc35-4eb0-a035-7b3622d2e22c',
     name: 'POS Profesional',
     price: 139900,
     audience: 'Pet shops, ferreterías, veterinarias y minimercados.',
@@ -59,7 +59,7 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     id: 'empresarial',
-    paqueteId: 'EMPRESARIAL_PAQUETE_ID_PENDIENTE',
+    paqueteId: 'b623dc1f-c6d8-414d-9aec-f912a543e7cc',
     name: 'POS Empresarial',
     price: 219900,
     audience: 'Negocios con varias sucursales y equipos más grandes.',
