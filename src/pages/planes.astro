@@ -22,7 +22,7 @@ import { pricingPlans } from '../lib/pricingPlans';
 
     <section class="pricing-grid">
       {pricingPlans.map((plan) => (
-        <PricingCard plan={plan} ctaHref={`/prueba-gratis?plan=${plan.id}`} />
+        <PricingCard plan={plan} ctaHref="/prueba-gratis" />
       ))}
     </section>
 
