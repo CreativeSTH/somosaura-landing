@@ -1,0 +1,67 @@
+---
+/* Mejora progresiva: sin JavaScript el campo no aparece y la lista completa queda visible. */
+---
+
+<input
+  type="search"
+  class="ayuda-buscador"
+  placeholder="Busca tu pregunta: factura, recibo, sin internet…"
+  aria-label="Buscar en la ayuda"
+  hidden
+/>
+
+<script>
+  import { normalizarBusqueda } from '../lib/ayuda';
+
+  const input = document.querySelector<HTMLInputElement>('.ayuda-buscador');
+  const tarjetas = [...document.querySelectorAll<HTMLElement>('.ayuda-tarjeta')];
+  const categorias = [...document.querySelectorAll<HTMLElement>('[data-categoria]')];
+  const vacio = document.querySelector<HTMLElement>('.ayuda-sin-resultados');
+  if (input) {
+    input.hidden = false;
+    input.addEventListener('input', () => {
+      const palabras = normalizarBusqueda(input.value).split(' ').filter(Boolean);
+      let visibles = 0;
+      for (const t of tarjetas) {
+        const coincide = palabras.every((p) => (t.dataset.busqueda ?? '').includes(p));
+        t.hidden = !coincide;
+        if (coincide) visibles++;
+      }
+      for (const c of categorias) c.hidden = !c.querySelector('.ayuda-tarjeta:not([hidden])');
+      if (vacio) vacio.hidden = visibles > 0;
+    });
+  }
+</script>
+
+<style>
+  .ayuda-buscador {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    margin: 28px 0 0;
+    padding: 14px 22px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--fg);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-pill);
+    transition: border-color 0.2s var(--ease-out);
+  }
+  .ayuda-buscador[hidden] {
+    display: none;
+  }
+  .ayuda-buscador::placeholder {
+    color: var(--fg-faint);
+  }
+  .ayuda-buscador:focus {
+    outline: 2px solid var(--accent-violet);
+    outline-offset: 2px;
+    border-color: transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ayuda-buscador {
+      transition: none;
+    }
+  }
+</style>

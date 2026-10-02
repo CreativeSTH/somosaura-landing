@@ -1,0 +1,5 @@
+# Centro de ayuda: AURA lee este índice desde otro dominio. Es contenido público (el mismo de /ayuda/...),
+# así que se abre a cualquier origen; un _headers estático no admite una lista de orígenes.
+/ayuda/articulos.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300

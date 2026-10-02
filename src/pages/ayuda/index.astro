@@ -1,0 +1,84 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FinalCTA from '../../components/FinalCTA.astro';
+import Footer from '../../components/Footer.astro';
+import AyudaBuscador from '../../components/AyudaBuscador.astro';
+import AyudaCategoria from '../../components/AyudaCategoria.astro';
+import { cargarIndiceAyuda } from '../../lib/ayudaContenido';
+import { textoBusqueda } from '../../lib/ayuda';
+
+const indice = await cargarIndiceAyuda();
+const porSlug = new Map(indice.articulos.map((a) => [a.slug, a]));
+---
+
+<Layout
+  title="Centro de ayuda — AURA"
+  description="Respuestas sencillas sobre facturación electrónica, recibos, ventas, caja y cómo seguir vendiendo sin internet con AURA."
+>
+  <main class="ayuda">
+    <header class="ayuda-hero">
+      <p class="ayuda-eyebrow">Centro de ayuda</p>
+      <h1>¿En qué te podemos ayudar?</h1>
+      <p class="ayuda-intro">Respuestas cortas y sin enredos sobre facturación, recibos y el día a día con AURA.</p>
+      <AyudaBuscador />
+    </header>
+    {indice.categorias.map((c) => (
+      <AyudaCategoria
+        nombre={c.nombre}
+        articulos={c.articulos.map((slug) => {
+          const a = porSlug.get(slug)!;
+          return { slug, titulo: a.titulo, resumen: a.resumen, busqueda: textoBusqueda(a) };
+        })}
+      />
+    ))}
+    <p class="ayuda-sin-resultados" hidden>
+      No encontramos artículos con esas palabras. Prueba con otras, como «factura» o «recibo».
+    </p>
+  </main>
+  <FinalCTA />
+  <Footer />
+</Layout>
+
+<style>
+  .ayuda {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: calc(var(--topbar-height) + 48px) 24px 40px;
+  }
+  .ayuda-hero {
+    margin-bottom: 44px;
+  }
+  .ayuda-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: var(--accent-violet);
+    margin: 0 0 12px;
+  }
+  .ayuda-hero h1 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .ayuda-intro {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  .ayuda-sin-resultados {
+    font-size: 14.5px;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  .ayuda-sin-resultados[hidden] {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .ayuda {
+      padding: calc(var(--topbar-height) + 32px) 20px 24px;
+    }
+  }
+</style>

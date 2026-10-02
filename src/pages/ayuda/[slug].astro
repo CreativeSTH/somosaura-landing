@@ -1,0 +1,129 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FinalCTA from '../../components/FinalCTA.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/ayuda-prosa.css';
+import { cargarIndiceAyuda } from '../../lib/ayudaContenido';
+import type { ArticuloAyuda, IndiceAyuda } from '../../lib/ayuda';
+
+export async function getStaticPaths() {
+  const indice = await cargarIndiceAyuda();
+  return indice.articulos.map((articulo) => ({ params: { slug: articulo.slug }, props: { articulo, indice } }));
+}
+
+const { articulo, indice } = Astro.props as { articulo: ArticuloAyuda; indice: IndiceAyuda };
+const categoria = indice.categorias.find((c) => c.id === articulo.categoria)!;
+const relacionados = articulo.relacionados
+  .map((slug) => indice.articulos.find((a) => a.slug === slug))
+  .filter((a): a is ArticuloAyuda => !!a);
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const [anio, mes, dia] = articulo.revisado.split('-').map(Number);
+const revisado = `${dia} de ${MESES[mes - 1]} de ${anio}`;
+---
+
+<Layout title={`${articulo.titulo} — Ayuda AURA`} description={articulo.resumen}>
+  <main class="ayuda-articulo">
+    <nav class="ayuda-migas" aria-label="Ruta">
+      <a href="/ayuda">Ayuda</a>
+      <span aria-hidden="true">›</span>
+      <span>{categoria.nombre}</span>
+    </nav>
+    <header class="ayuda-hero">
+      <h1>{articulo.titulo}</h1>
+      <p class="ayuda-meta">Última revisión: {revisado}</p>
+    </header>
+    <article class="ayuda-prosa" set:html={articulo.html} />
+    {articulo.fuentes.length > 0 && (
+      <section class="ayuda-anexo">
+        <h2>Fuentes</h2>
+        <ul>
+          {articulo.fuentes.map((f) => (
+            <li>{f.url ? <a href={f.url} rel="noopener" target="_blank">{f.texto}</a> : f.texto}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+    {relacionados.length > 0 && (
+      <section class="ayuda-anexo">
+        <h2>También te puede servir</h2>
+        <ul>
+          {relacionados.map((r) => (
+            <li><a href={`/ayuda/${r.slug}`}>{r.titulo}</a></li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </main>
+  <FinalCTA />
+  <Footer />
+</Layout>
+
+<style>
+  .ayuda-articulo {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: calc(var(--topbar-height) + 48px) 24px 40px;
+  }
+  .ayuda-migas {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--fg-faint);
+    margin-bottom: 18px;
+  }
+  .ayuda-migas a {
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .ayuda-migas a:hover {
+    color: var(--fg);
+  }
+  .ayuda-hero {
+    margin-bottom: 28px;
+  }
+  .ayuda-hero h1 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .ayuda-meta {
+    font-size: 13px;
+    color: var(--fg-faint);
+    margin: 0;
+  }
+  .ayuda-anexo {
+    margin-top: 32px;
+  }
+  .ayuda-anexo h2 {
+    font-size: 19px;
+    font-weight: 800;
+    margin: 0 0 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .ayuda-anexo ul {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ayuda-anexo li {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--fg-muted);
+  }
+  .ayuda-anexo a {
+    color: var(--accent-teal);
+    text-underline-offset: 3px;
+  }
+  .ayuda-anexo a:hover {
+    color: var(--accent-teal-glow);
+  }
+  @media (max-width: 640px) {
+    .ayuda-articulo {
+      padding: calc(var(--topbar-height) + 32px) 20px 24px;
+    }
+  }
+</style>

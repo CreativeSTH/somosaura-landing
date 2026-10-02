@@ -1,0 +1,85 @@
+---
+interface Props {
+  nombre: string;
+  articulos: { slug: string; titulo: string; resumen: string; busqueda: string }[];
+}
+
+const { nombre, articulos } = Astro.props;
+---
+
+<section class="ayuda-categoria" data-categoria>
+  <h2>{nombre}</h2>
+  <div class="ayuda-categoria-grid">
+    {articulos.map((a) => (
+      <a href={`/ayuda/${a.slug}`} class="ayuda-tarjeta" data-busqueda={a.busqueda}>
+        <span class="ayuda-tarjeta-titulo">{a.titulo}</span>
+        <span class="ayuda-tarjeta-resumen">{a.resumen}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ayuda-categoria {
+    margin-bottom: 44px;
+  }
+  .ayuda-categoria[hidden] {
+    display: none;
+  }
+  .ayuda-categoria h2 {
+    font-size: 19px;
+    font-weight: 800;
+    margin: 0 0 16px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .ayuda-categoria-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 900px) {
+    .ayuda-categoria-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .ayuda-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+  }
+  .ayuda-tarjeta[hidden] {
+    display: none;
+  }
+  .ayuda-tarjeta:hover,
+  .ayuda-tarjeta:focus-visible {
+    border-color: var(--accent-violet);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .ayuda-tarjeta:focus-visible {
+    outline: 2px solid var(--accent-violet);
+    outline-offset: 2px;
+  }
+  .ayuda-tarjeta-titulo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.35;
+  }
+  .ayuda-tarjeta-resumen {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--fg-muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ayuda-tarjeta {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,84 @@
+/* Cuerpo de un artículo de ayuda (HTML de Markdown, sin clases). Mismo lenguaje visual que
+   .legal-section de politica-de-privacidad.astro; solo tokens de tokens.css. */
+.ayuda-prosa h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--fg);
+  margin: 28px 0 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ayuda-prosa h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-violet);
+  margin: 20px 0 10px;
+}
+.ayuda-prosa p,
+.ayuda-prosa li {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--fg-muted);
+}
+.ayuda-prosa p {
+  margin: 0 0 14px;
+}
+.ayuda-prosa ul,
+.ayuda-prosa ol {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ayuda-prosa strong {
+  color: var(--fg);
+  font-weight: 700;
+}
+.ayuda-prosa a {
+  color: var(--accent-teal);
+  text-underline-offset: 3px;
+}
+.ayuda-prosa a:hover {
+  color: var(--accent-teal-glow);
+}
+/* Nota destacada: violeta de --accent-violet (#b48cff) con alfa, mismo criterio que .legal-todo con el naranja. */
+.ayuda-prosa blockquote {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--accent-violet);
+  background: rgba(180, 140, 255, 0.08);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.ayuda-prosa blockquote p:last-child {
+  margin-bottom: 0;
+}
+.ayuda-prosa table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ayuda-prosa th {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  font-weight: 700;
+  padding: 10px 12px;
+}
+.ayuda-prosa td {
+  color: var(--fg-muted);
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: top;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .ayuda-prosa table {
+    display: block;
+    overflow-x: auto;
+  }
+}
