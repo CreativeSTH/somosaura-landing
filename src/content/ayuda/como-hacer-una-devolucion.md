@@ -5,7 +5,7 @@ resumen: 'Puedes devolver todo o parte de una venta, reembolsar en efectivo, des
 palabrasClave: ['devolución', 'devolver', 'reembolso', 'nota crédito', 'saldo a favor', 'cambio', 'anular venta', 'cancelar venta']
 orden: 3
 revisado: 2026-10-02
-relacionados: ['ventas-a-credito-y-recibo-de-caja', 'factura-rechazada-por-la-dian', 'en-validacion-dian']
+relacionados: ['que-es-una-nota-credito', 'saldo-a-favor-del-cliente', 'ventas-a-credito-y-recibo-de-caja', 'factura-rechazada-por-la-dian']
 ---
 
 **La respuesta corta:** abre la venta en **Ventas** (o en **Caja**), pulsa **Devolver**, elige qué productos y cuántas unidades se devuelven y cómo le devuelves el dinero al cliente. AURA registra la devolución, ajusta el inventario y, si la venta tenía factura electrónica, emite la **nota crédito** ante la DIAN por ti.
