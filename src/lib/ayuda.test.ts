@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   armarIndiceAyuda,
+  CATEGORIAS_AYUDA,
   articulosVencidos,
   relacionadosInexistentes,
   filtrarArticulos,
@@ -96,5 +97,13 @@ describe('relacionadosInexistentes', () => {
         art({ slug: 'b', relacionados: ['a'] }),
       ]),
     ).toEqual(['a -> zzz']);
+  });
+});
+
+describe('CATEGORIAS_AYUDA', () => {
+  it('incluye "Bodegas e inventario" justo después de "Ventas y caja"', () => {
+    const ids = CATEGORIAS_AYUDA.map((c) => c.id);
+    expect(ids.indexOf('bodegas-e-inventario')).toBe(ids.indexOf('ventas-y-caja') + 1);
+    expect(CATEGORIAS_AYUDA.find((c) => c.id === 'bodegas-e-inventario')?.nombre).toBe('Bodegas e inventario');
   });
 });

@@ -6,7 +6,7 @@ const ayuda = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/ayuda' }),
   schema: z.object({
     titulo: z.string(),
-    categoria: z.enum(['facturacion-electronica', 'recibos-y-comprobantes', 'ventas-y-caja', 'sin-internet', 'tu-cuenta']),
+    categoria: z.enum(['facturacion-electronica', 'recibos-y-comprobantes', 'ventas-y-caja', 'bodegas-e-inventario', 'sin-internet', 'tu-cuenta']),
     resumen: z.string().max(200),
     palabrasClave: z.array(z.string()).default([]),
     orden: z.number().int(),
