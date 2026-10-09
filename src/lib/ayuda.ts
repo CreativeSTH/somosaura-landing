@@ -7,6 +7,7 @@ export type CategoriaAyuda =
   | 'recibos-y-comprobantes'
   | 'ventas-y-caja'
   | 'bodegas-e-inventario'
+  | 'equipo-y-turnos'
   | 'sin-internet'
   | 'tu-cuenta';
 
@@ -16,6 +17,7 @@ export const CATEGORIAS_AYUDA: readonly { id: CategoriaAyuda; nombre: string }[]
   { id: 'recibos-y-comprobantes', nombre: 'Recibos y comprobantes' },
   { id: 'ventas-y-caja', nombre: 'Ventas y caja' },
   { id: 'bodegas-e-inventario', nombre: 'Bodegas e inventario' },
+  { id: 'equipo-y-turnos', nombre: 'Equipo y turnos' },
   { id: 'sin-internet', nombre: 'Sin internet y contingencia' },
   { id: 'tu-cuenta', nombre: 'Tu cuenta AURA' },
 ];

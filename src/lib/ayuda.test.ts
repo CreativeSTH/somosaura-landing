@@ -106,4 +106,10 @@ describe('CATEGORIAS_AYUDA', () => {
     expect(ids.indexOf('bodegas-e-inventario')).toBe(ids.indexOf('ventas-y-caja') + 1);
     expect(CATEGORIAS_AYUDA.find((c) => c.id === 'bodegas-e-inventario')?.nombre).toBe('Bodegas e inventario');
   });
+
+  it('incluye "Equipo y turnos" justo después de "Bodegas e inventario"', () => {
+    const ids = CATEGORIAS_AYUDA.map((c) => c.id);
+    expect(ids.indexOf('equipo-y-turnos')).toBe(ids.indexOf('bodegas-e-inventario') + 1);
+    expect(CATEGORIAS_AYUDA.find((c) => c.id === 'equipo-y-turnos')?.nombre).toBe('Equipo y turnos');
+  });
 });
